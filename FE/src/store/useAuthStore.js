@@ -15,9 +15,9 @@ const useAuthStore = create(
           const { data } = await api.post('/users/login', { email, password });
           set({ user: data, isLoading: false });
         } catch (error) {
-          set({ 
+          set({
             error: error.response?.data?.message || 'Login failed',
-            isLoading: false 
+            isLoading: false
           });
         }
       },
@@ -28,9 +28,9 @@ const useAuthStore = create(
           const { data } = await api.post('/users', { name, email, password });
           set({ user: data, isLoading: false });
         } catch (error) {
-          set({ 
+          set({
             error: error.response?.data?.message || 'Registration failed',
-            isLoading: false 
+            isLoading: false
           });
         }
       },
@@ -44,7 +44,7 @@ const useAuthStore = create(
           set({ user: null }); // logout locally anyway
         }
       },
-      
+
       clearError: () => set({ error: null })
     }),
     {

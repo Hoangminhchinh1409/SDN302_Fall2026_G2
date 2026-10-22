@@ -43,9 +43,9 @@ const OrderDetails = () => {
             <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
               <h2 className="text-xl font-bold text-brand-dark mb-4">Shipping</h2>
               <p className="text-gray-700 mb-4">
-                <strong>Name: </strong> {order.user.name} <br />
-                <strong>Email: </strong> <a href={`mailto:${order.user.email}`} className="text-brand-orange hover:underline">{order.user.email}</a> <br />
-                <strong>Address: </strong> {order.shippingAddress.address}, {order.shippingAddress.city}, {order.shippingAddress.postalCode}, {order.shippingAddress.country}
+                <strong>Name: </strong> {order.user?.name || user?.name || 'Customer'} <br />
+                <strong>Email: </strong> <a href={`mailto:${order.user?.email || user?.email || ''}`} className="text-brand-orange hover:underline">{order.user?.email || user?.email || ''}</a> <br />
+                <strong>Address: </strong> {order.shippingAddress?.address}, {order.shippingAddress?.city}, {order.shippingAddress?.postalCode}, {order.shippingAddress?.country}
               </p>
               {order.isDelivered ? (
                 <div className="bg-green-100 text-green-700 p-3 rounded text-sm font-medium">

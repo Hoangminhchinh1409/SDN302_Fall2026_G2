@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema(
       enum: ["customer", "staff", "admin"],
       default: "customer",
     },
+    avatar: {
+      type: String,
+      default: "",
+    },
     address: {
       type: String,
       default: "",
@@ -34,6 +38,16 @@ const userSchema = new mongoose.Schema(
     phone: {
       type: String,
       default: "",
+    },
+    rewardPoints: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    membershipTier: {
+      type: String,
+      enum: ["Bronze", "Silver", "Gold", "Diamond"],
+      default: "Bronze",
     },
     wishlist: [
       {
@@ -47,14 +61,26 @@ const userSchema = new mongoose.Schema(
   },
 );
 
-// Encrypt password using bcrypt
-userSchema.pre("save", async function (next) {
+// Auto-calculate tier and encrypt password using bcrypt
+userSchema.pre("save", async function () {
+  if (this.isModified("rewardPoints") || !this.membershipTier) {
+    const pts = this.rewardPoints || 0;
+    if (pts >= 3000) {
+      this.membershipTier = "Diamond";
+    } else if (pts >= 1500) {
+      this.membershipTier = "Gold";
+    } else if (pts >= 500) {
+      this.membershipTier = "Silver";
+    } else {
+      this.membershipTier = "Bronze";
+    }
+  }
+
   if (!this.isModified("password")) {
-    return next();
+    return;
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  next();
 });
 
 // Match user entered password to hashed password in database
