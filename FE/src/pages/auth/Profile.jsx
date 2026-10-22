@@ -11,6 +11,58 @@ const PRESET_AVATARS = [
   'https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&q=80&w=200',
 ];
 
+// Tier configuration & perk definitions
+const TIER_CONFIG = {
+  Bronze: {
+    name: 'Bronze',
+    minPoints: 0,
+    nextTier: 'Silver',
+    nextThreshold: 500,
+    accentColor: '#92400e',
+    badgeClass: 'bg-amber-100 text-amber-900 border-amber-300',
+    cardGradient: 'from-amber-500/10 via-orange-500/5 to-white border-amber-200',
+    progressColor: 'bg-amber-600',
+    icon: '🥉',
+    perks: ['1x Point earn rate on all purchases', 'Standard customer support', 'Special birthday coupon'],
+  },
+  Silver: {
+    name: 'Silver',
+    minPoints: 500,
+    nextTier: 'Gold',
+    nextThreshold: 1500,
+    accentColor: '#475569',
+    badgeClass: 'bg-slate-100 text-slate-800 border-slate-300',
+    cardGradient: 'from-slate-300/20 via-slate-100/10 to-white border-slate-300',
+    progressColor: 'bg-slate-500',
+    icon: '🥈',
+    perks: ['5% Discount on select accessories', '1.2x Point earn rate', 'Priority customer support'],
+  },
+  Gold: {
+    name: 'Gold',
+    minPoints: 1500,
+    nextTier: 'Diamond',
+    nextThreshold: 3000,
+    accentColor: '#b45309',
+    badgeClass: 'bg-yellow-100 text-yellow-900 border-yellow-300',
+    cardGradient: 'from-yellow-400/15 via-amber-200/10 to-white border-yellow-300',
+    progressColor: 'bg-yellow-500',
+    icon: '🥇',
+    perks: ['10% Discount on all orders', 'Free standard shipping', '1.5x Point earn rate', 'Exclusive quarterly surprise box'],
+  },
+  Diamond: {
+    name: 'Diamond',
+    minPoints: 3000,
+    nextTier: null,
+    nextThreshold: null,
+    accentColor: '#0e7490',
+    badgeClass: 'bg-cyan-100 text-cyan-900 border-cyan-300',
+    cardGradient: 'from-cyan-400/20 via-blue-500/10 to-white border-cyan-300',
+    progressColor: 'bg-gradient-to-r from-cyan-500 to-blue-600',
+    icon: '💎',
+    perks: ['15% VIP Discount on all orders & services', 'Free express shipping', '2x Point earn rate', '24/7 dedicated pet concierge'],
+  },
+};
+
 const Profile = () => {
   const { user, updateProfile, fetchProfile, isLoading, clearError } = useAuthStore();
   const navigate = useNavigate();
@@ -38,6 +90,7 @@ const Profile = () => {
   const [message, setMessage] = useState(null);
   const [success, setSuccess] = useState(false);
   const [showPresets, setShowPresets] = useState(false);
+  const [showTiersModal, setShowTiersModal] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -58,6 +111,21 @@ const Profile = () => {
 
     loadProfileData();
   }, [user?._id, navigate]);
+
+  // Points & Tier calculation
+  const rewardPoints = user?.rewardPoints ?? 0;
+  const currentTier = user?.membershipTier || (rewardPoints >= 3000 ? 'Diamond' : rewardPoints >= 1500 ? 'Gold' : rewardPoints >= 500 ? 'Silver' : 'Bronze');
+  const tierInfo = TIER_CONFIG[currentTier] || TIER_CONFIG.Bronze;
+
+  // Calculate progress to next tier
+  let progressPercent = 100;
+  let pointsToNext = 0;
+  if (tierInfo.nextThreshold) {
+    const range = tierInfo.nextThreshold - tierInfo.minPoints;
+    const earnedInRange = Math.max(0, rewardPoints - tierInfo.minPoints);
+    progressPercent = Math.min(100, Math.round((earnedInRange / range) * 100));
+    pointsToNext = Math.max(0, tierInfo.nextThreshold - rewardPoints);
+  }
 
   // Handle avatar upload with canvas compression
   const handleAvatarFileChange = (e) => {
@@ -176,7 +244,7 @@ const Profile = () => {
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-extrabold text-brand-dark tracking-tight">User Profile</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage your account details, shipping address, and security settings</p>
+            <p className="text-sm text-gray-500 mt-1">Manage your account details, membership tier, and security settings</p>
           </div>
           <Link
             to="/shop"
@@ -215,7 +283,7 @@ const Profile = () => {
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* LEFT COLUMN: User Summary & Avatar */}
+          {/* LEFT COLUMN: User Summary, Avatar & Quick Links */}
           <div className="space-y-6">
             {/* User Profile Card */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center">
@@ -301,7 +369,14 @@ const Profile = () => {
               {/* User details */}
               <h2 className="text-xl font-bold text-brand-dark mb-1">{name || 'User'}</h2>
               <p className="text-sm text-gray-500 mb-3">{email}</p>
-              <div className="mb-4">{getRoleBadge(user?.role)}</div>
+
+              {/* Badges: Role + Membership Tier */}
+              <div className="flex flex-wrap items-center justify-center gap-2 mb-4">
+                {getRoleBadge(user?.role)}
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border flex items-center gap-1 shadow-sm ${tierInfo.badgeClass}`}>
+                  <span>{tierInfo.icon}</span> {currentTier} Member
+                </span>
+              </div>
 
               <div className="pt-4 border-t border-gray-100 text-left text-xs text-gray-500 space-y-2">
                 <div className="flex items-center gap-2">
@@ -359,8 +434,110 @@ const Profile = () => {
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Edit Forms */}
-          <div className="lg:col-span-2">
+          {/* RIGHT COLUMN: Membership & Reward Card + Edit Forms */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* VIP MEMBERSHIP & REWARD POINTS CARD */}
+            <div className={`bg-gradient-to-br ${tierInfo.cardGradient} rounded-2xl border shadow-sm p-6 relative overflow-hidden`}>
+              {/* Decorative watermark icon */}
+              <div className="absolute -right-4 -bottom-6 text-8xl opacity-10 pointer-events-none select-none">
+                {tierInfo.icon}
+              </div>
+
+              <div className="flex flex-wrap items-start justify-between gap-4 mb-5">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-2xl">{tierInfo.icon}</span>
+                    <h2 className="text-xl font-extrabold text-brand-dark tracking-tight">
+                      {currentTier} Tier Membership
+                    </h2>
+                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border shadow-xs ${tierInfo.badgeClass}`}>
+                      Active Status
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Earn 1 point for every $1 spent on orders. Redeem points for exclusive perks!
+                  </p>
+                </div>
+
+                {/* Points counter pill */}
+                <div className="bg-white/90 backdrop-blur-sm border border-gray-200/80 rounded-2xl px-5 py-3 shadow-sm text-right">
+                  <div className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-1.5 justify-end">
+                    <i className="fas fa-coins text-amber-500"></i> Reward Points
+                  </div>
+                  <div className="text-3xl font-black text-brand-dark tracking-tight">
+                    {rewardPoints.toLocaleString()}
+                    <span className="text-xs font-bold text-brand-orange ml-1">pts</span>
+                  </div>
+                  <div className="text-[11px] text-gray-400">
+                    ≈ ${(rewardPoints / 100).toFixed(2)} savings value
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Bar towards next tier */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-gray-100 shadow-xs mb-4">
+                <div className="flex justify-between items-center text-xs font-bold mb-1.5">
+                  <span className="text-gray-700 flex items-center gap-1.5">
+                    <span>{tierInfo.icon}</span> {currentTier}
+                  </span>
+                  {tierInfo.nextTier ? (
+                    <span className="text-brand-dark flex items-center gap-1.5">
+                      <span>{TIER_CONFIG[tierInfo.nextTier]?.icon}</span> {tierInfo.nextTier} ({tierInfo.nextThreshold?.toLocaleString()} pts)
+                    </span>
+                  ) : (
+                    <span className="text-cyan-700 font-extrabold">👑 VIP Highest Tier</span>
+                  )}
+                </div>
+
+                {/* Progress bar line */}
+                <div className="w-full bg-gray-200 h-3 rounded-full overflow-hidden p-0.5">
+                  <div
+                    className={`h-full rounded-full transition-all duration-700 ${tierInfo.progressColor}`}
+                    style={{ width: `${progressPercent}%` }}
+                  ></div>
+                </div>
+
+                <div className="flex justify-between items-center mt-2 text-[11px] text-gray-500">
+                  <span>Current balance: <strong className="text-brand-dark">{rewardPoints.toLocaleString()} pts</strong></span>
+                  {tierInfo.nextTier ? (
+                    <span className="font-medium text-brand-orange">
+                      <i className="fas fa-bolt text-xs mr-1"></i>
+                      Only <strong>{pointsToNext.toLocaleString()} more pts</strong> to reach {tierInfo.nextTier}!
+                    </span>
+                  ) : (
+                    <span className="font-bold text-cyan-600">
+                      🎉 You enjoy all maximum Diamond perks!
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Perks List & View All Tiers button */}
+              <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-semibold text-gray-600">Your Perks:</span>
+                  {tierInfo.perks.slice(0, 2).map((perk, i) => (
+                    <span
+                      key={i}
+                      className="bg-white/90 text-gray-700 text-xs px-2.5 py-1 rounded-lg border border-gray-200/60 font-medium flex items-center gap-1.5 shadow-2xs"
+                    >
+                      <i className="fas fa-check text-emerald-500 text-[10px]"></i>
+                      {perk}
+                    </span>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowTiersModal(true)}
+                  className="text-xs text-brand-orange hover:text-orange-700 font-bold underline flex items-center gap-1 cursor-pointer"
+                >
+                  <i className="fas fa-info-circle"></i> View All Tier Benefits
+                </button>
+              </div>
+            </div>
+
+            {/* EDIT FORMS */}
             <form onSubmit={submitHandler} className="space-y-6">
               {/* Card 1: Personal & Shipping Information */}
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
@@ -502,7 +679,7 @@ const Profile = () => {
                         setConfirmPassword('');
                       }
                     }}
-                    className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all ${
+                    className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all cursor-pointer ${
                       isChangingPassword
                         ? 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
                         : 'bg-orange-50 text-brand-orange border-orange-200 hover:bg-orange-100'
@@ -621,7 +798,7 @@ const Profile = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="bg-brand-dark text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-brand-orange transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  className="bg-brand-dark text-white font-semibold px-8 py-3.5 rounded-xl hover:bg-brand-orange transition-all shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
                 >
                   {isLoading ? (
                     <>
@@ -640,6 +817,84 @@ const Profile = () => {
           </div>
         </div>
       </div>
+
+      {/* ALL TIERS INFORMATION MODAL */}
+      {showTiersModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fadeIn">
+          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-gray-100 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-4 mb-6 border-b border-gray-100">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">✨</span>
+                <div>
+                  <h3 className="text-xl font-extrabold text-brand-dark">Pet Store Membership Program</h3>
+                  <p className="text-xs text-gray-500">Collect reward points on every order to unlock VIP tier benefits</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTiersModal(false)}
+                className="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <i className="fas fa-times"></i>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {Object.keys(TIER_CONFIG).map((tierKey) => {
+                const tier = TIER_CONFIG[tierKey];
+                const isCurrent = currentTier === tierKey;
+
+                return (
+                  <div
+                    key={tierKey}
+                    className={`rounded-2xl p-4 border transition-all ${
+                      isCurrent
+                        ? 'border-brand-orange bg-orange-50/40 ring-2 ring-orange-200'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-2xl">{tier.icon}</span>
+                        <div>
+                          <span className="font-extrabold text-brand-dark text-base">{tier.name}</span>
+                          <span className="text-xs text-gray-500 ml-2">
+                            ({tier.minPoints.toLocaleString()} - {tier.nextThreshold ? `${(tier.nextThreshold - 1).toLocaleString()} pts` : '∞'})
+                          </span>
+                        </div>
+                      </div>
+                      {isCurrent && (
+                        <span className="bg-brand-orange text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
+                          Current Tier
+                        </span>
+                      )}
+                    </div>
+
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-3 pt-3 border-t border-gray-100/80">
+                      {tier.perks.map((perk, idx) => (
+                        <li key={idx} className="text-xs text-gray-600 flex items-center gap-2">
+                          <i className="fas fa-check-circle text-emerald-500 text-xs shrink-0"></i>
+                          <span>{perk}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-gray-100 text-center">
+              <button
+                type="button"
+                onClick={() => setShowTiersModal(false)}
+                className="bg-brand-dark text-white text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-brand-orange transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

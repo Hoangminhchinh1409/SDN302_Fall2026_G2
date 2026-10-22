@@ -15,6 +15,11 @@ const authUser = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      avatar: user.avatar || '',
+      address: user.address || '',
+      phone: user.phone || '',
+      rewardPoints: user.rewardPoints || 0,
+      membershipTier: user.membershipTier || 'Bronze',
     });
   } else {
     res.status(401).json({ message: 'Invalid email or password' });
@@ -46,6 +51,11 @@ const registerUser = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      avatar: user.avatar || '',
+      address: user.address || '',
+      phone: user.phone || '',
+      rewardPoints: user.rewardPoints || 0,
+      membershipTier: user.membershipTier || 'Bronze',
     });
   } else {
     res.status(400).json({ message: 'Invalid user data' });
@@ -75,8 +85,11 @@ const getUserProfile = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      address: user.address,
-      phone: user.phone,
+      avatar: user.avatar || '',
+      address: user.address || '',
+      phone: user.phone || '',
+      rewardPoints: user.rewardPoints || 0,
+      membershipTier: user.membershipTier || (user.rewardPoints >= 3000 ? 'Diamond' : user.rewardPoints >= 1500 ? 'Gold' : user.rewardPoints >= 500 ? 'Silver' : 'Bronze'),
     });
   } else {
     res.status(404).json({ message: 'User not found' });
@@ -92,10 +105,27 @@ const updateUserProfile = async (req, res) => {
   if (user) {
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
-    user.address = req.body.address || user.address;
-    user.phone = req.body.phone || user.phone;
+    user.address = req.body.address !== undefined ? req.body.address : user.address;
+    user.phone = req.body.phone !== undefined ? req.body.phone : user.phone;
+    if (req.body.avatar !== undefined) {
+      user.avatar = req.body.avatar;
+    }
 
+    // Safe password change: require current password check
     if (req.body.password) {
+      if (!req.body.currentPassword) {
+        res.status(400).json({ message: 'Please provide your current password to change password' });
+        return;
+      }
+      const isMatch = await user.matchPassword(req.body.currentPassword);
+      if (!isMatch) {
+        res.status(400).json({ message: 'Current password is incorrect' });
+        return;
+      }
+      if (req.body.password.length < 6) {
+        res.status(400).json({ message: 'New password must be at least 6 characters' });
+        return;
+      }
       user.password = req.body.password;
     }
 
@@ -105,8 +135,11 @@ const updateUserProfile = async (req, res) => {
       name: updatedUser.name,
       email: updatedUser.email,
       role: updatedUser.role,
-      address: updatedUser.address,
-      phone: updatedUser.phone,
+      avatar: updatedUser.avatar || '',
+      address: updatedUser.address || '',
+      phone: updatedUser.phone || '',
+      rewardPoints: updatedUser.rewardPoints || 0,
+      membershipTier: updatedUser.membershipTier || 'Bronze',
     });
   } else {
     res.status(404).json({ message: 'User not found' });

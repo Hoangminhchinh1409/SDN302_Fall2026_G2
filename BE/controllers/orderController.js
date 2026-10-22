@@ -1,4 +1,5 @@
 const Order = require('../models/Order');
+const User = require('../models/User');
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -15,28 +16,70 @@ const addOrderItems = async (req, res) => {
       totalPrice,
     } = req.body;
 
-    if (orderItems && orderItems.length === 0) {
+    if (!orderItems || orderItems.length === 0) {
       res.status(400).json({ message: 'No order items' });
       return;
     }
 
+    // Format and sanitize order items
+    const formattedOrderItems = orderItems.map((item) => ({
+      name: item.name,
+      qty: Number(item.qty) || 1,
+      image: item.image || '/images/sample.jpg',
+      price: Number(item.price) || 0,
+      product: item.product || item._id,
+    }));
+
     const order = new Order({
-      orderItems,
+      orderItems: formattedOrderItems,
       user: req.user._id,
-      shippingAddress,
-      paymentMethod,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice,
+      shippingAddress: {
+        address: shippingAddress?.address || 'Default Address',
+        city: shippingAddress?.city || 'Hanoi',
+        postalCode: shippingAddress?.postalCode || '100000',
+        country: shippingAddress?.country || 'Vietnam',
+      },
+      paymentMethod: paymentMethod || 'Cash on Delivery',
+      itemsPrice: Number(itemsPrice) || 0,
+      taxPrice: Number(taxPrice) || 0,
+      shippingPrice: Number(shippingPrice) || 0,
+      totalPrice: Number(totalPrice) || 0,
     });
 
     const createdOrder = await order.save();
 
+    // Safely earn reward points (1 point per dollar spent) without triggering user password validation
+    try {
+      const pointsToAdd = Math.round(Number(totalPrice) || 0);
+      if (pointsToAdd > 0) {
+        const user = await User.findById(req.user._id);
+        if (user) {
+          const newPoints = (user.rewardPoints || 0) + pointsToAdd;
+          let newTier = 'Bronze';
+          if (newPoints >= 3000) newTier = 'Diamond';
+          else if (newPoints >= 1500) newTier = 'Gold';
+          else if (newPoints >= 500) newTier = 'Silver';
+
+          await User.updateOne(
+            { _id: req.user._id },
+            {
+              $set: {
+                rewardPoints: newPoints,
+                membershipTier: newTier,
+              },
+            }
+          );
+        }
+      }
+    } catch (pointsError) {
+      console.error('Points calculation error:', pointsError);
+      // Non-blocking: order is already created
+    }
+
     res.status(201).json(createdOrder);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Server Error' });
+    console.error('Order creation error:', error);
+    res.status(500).json({ message: error.message || 'Server Error' });
   }
 };
 

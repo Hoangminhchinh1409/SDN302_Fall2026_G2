@@ -98,8 +98,8 @@ const importData = async () => {
     console.log(`Data Imported! Total products: ${createdProducts.length}`);
 
     // Create Dummy Users
-    const adminUser = await User.create({ name: 'Admin User', email: 'admin@example.com', password: 'password', role: 'admin' });
-    const customerUser = await User.create({ name: 'John Doe', email: 'john@example.com', password: 'password', role: 'customer' });
+    const adminUser = await User.create({ name: 'Admin User', email: 'admin@example.com', password: 'password', role: 'admin', rewardPoints: 3200, membershipTier: 'Diamond' });
+    const customerUser = await User.create({ name: 'John Doe', email: 'john@example.com', password: 'password', role: 'customer', rewardPoints: 750, membershipTier: 'Silver' });
 
     // Seed Pet Profiles
     const pet1 = await PetProfile.create({ user: customerUser._id, name: 'Rex', type: 'Dog', breed: 'Golden Retriever', age: 2, weight: 15 });

@@ -61,6 +61,7 @@ function App() {
             <Route path="payment" element={<Payment />} />
             <Route path="placeorder" element={<PlaceOrder />} />
             <Route path="orderhistory" element={<OrderHistory />} />
+            <Route path="orders/myorders" element={<OrderHistory />} />
             <Route path="order/:id" element={<OrderDetails />} />
           </Route>
         </Route>

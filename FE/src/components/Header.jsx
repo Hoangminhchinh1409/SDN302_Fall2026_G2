@@ -83,23 +83,43 @@ const Header = () => {
 
           {user ? (
             <div className="relative group hidden sm:block">
-              <button aria-label="User menu" className="text-xl text-brand-dark hover:text-brand-orange transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange rounded-md px-2 py-1">
-                <i className="far fa-user" aria-hidden="true"></i>
-                <span className="text-sm font-medium">{user.name}</span>
+              <button aria-label="User menu" className="text-brand-dark hover:text-brand-orange transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange rounded-md px-2 py-1">
+                {user.avatar ? (
+                  <img src={user.avatar} alt={user.name} className="w-7 h-7 rounded-full object-cover border border-brand-orange/40" />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-orange-100 text-brand-orange flex items-center justify-center text-xs font-bold border border-orange-200">
+                    {user.name ? user.name.charAt(0).toUpperCase() : <i className="far fa-user text-xs" aria-hidden="true"></i>}
+                  </div>
+                )}
+                <span className="text-sm font-medium max-w-[110px] truncate">{user.name}</span>
               </button>
-              <div className="absolute right-0 top-full pt-2 w-48 hidden group-hover:block z-50">
-                <div className="bg-white border border-gray-200 rounded-md shadow-lg py-1">
-                  <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</Link>
-                  <Link to="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Wishlist</Link>
-                  <Link to="/pets" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Pets</Link>
-                  <Link to="/book-appointment" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Book Appointment</Link>
+              <div className="absolute right-0 top-full pt-2 w-56 hidden group-hover:block z-50">
+                <div className="bg-white border border-gray-200 rounded-xl shadow-xl py-2 overflow-hidden">
+                  {/* Membership & Points preview in dropdown */}
+                  <div className="px-4 py-2.5 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-amber-50/50">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-gray-800 flex items-center gap-1">
+                        {user.membershipTier === 'Diamond' ? '💎' : user.membershipTier === 'Gold' ? '🥇' : user.membershipTier === 'Silver' ? '🥈' : '🥉'}
+                        {user.membershipTier || 'Bronze'} Member
+                      </span>
+                      <span className="font-extrabold text-brand-orange flex items-center gap-1">
+                        <i className="fas fa-coins text-[11px]"></i> {user.rewardPoints || 0} pts
+                      </span>
+                    </div>
+                  </div>
+                  <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</Link>
+                  <Link to="/orders/myorders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Orders</Link>
+                  <Link to="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Wishlist</Link>
+                  <Link to="/pets" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Pets</Link>
+                  <Link to="/book-appointment" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Book Appointment</Link>
                   {user.role === 'admin' && (
-                    <Link to="/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Admin Dashboard</Link>
+                    <Link to="/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Admin Dashboard</Link>
                   )}
                   {user.role === 'staff' && (
-                    <Link to="/staff" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Staff Dashboard</Link>
+                    <Link to="/staff" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Staff Dashboard</Link>
                   )}
-                  <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</button>
+                  <div className="border-t border-gray-100 my-1"></div>
+                  <button onClick={handleLogout} className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">Logout</button>
                 </div>
               </div>
             </div>
