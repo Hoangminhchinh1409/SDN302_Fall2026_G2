@@ -1,0 +1,40 @@
+[{
+  "_id": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe830"
+  },
+  "user": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe82f"
+  },
+  "name": "Rex",
+  "type": "Dog",
+  "breed": "Golden Retriever",
+  "age": 2,
+  "weight": 15,
+  "createdAt": {
+    "$date": "2026-10-05T13:32:33.220Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:33.220Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe831"
+  },
+  "user": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe82f"
+  },
+  "name": "Whiskers",
+  "type": "Cat",
+  "breed": "Siamese",
+  "age": 1,
+  "weight": 4,
+  "createdAt": {
+    "$date": "2026-10-05T13:32:33.225Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:33.225Z"
+  },
+  "__v": 0
+}]

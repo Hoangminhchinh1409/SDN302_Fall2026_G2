@@ -1,0 +1,40 @@
+[{
+  "_id": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe838"
+  },
+  "user": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe82f"
+  },
+  "product": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe765"
+  },
+  "rating": 5,
+  "comment": "Amazing product!",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:33.262Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:33.262Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe839"
+  },
+  "user": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe82f"
+  },
+  "product": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe766"
+  },
+  "rating": 4,
+  "comment": "Good quality, my cat loves it.",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:33.268Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:33.268Z"
+  },
+  "__v": 0
+}]

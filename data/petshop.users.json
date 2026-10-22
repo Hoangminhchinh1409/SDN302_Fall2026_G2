@@ -1,0 +1,57 @@
+[{
+  "_id": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe82e"
+  },
+  "name": "Admin User",
+  "email": "admin@example.com",
+  "password": "$2b$10$EGEEx1qi1FIiN6XxNN0NseG87gJGG/X4ucQ1.X.JrUTsrwSYnvWri",
+  "role": "admin",
+  "address": "",
+  "phone": "",
+  "wishlist": [],
+  "createdAt": {
+    "$date": "2026-10-05T13:32:33.028Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:33.028Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe82f"
+  },
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "$2b$10$1onNVwZiqMQE3WY9Wp.7mugV/5HwJQUVAgCVhNMrKP80joO7HY2lq",
+  "role": "customer",
+  "address": "",
+  "phone": "",
+  "wishlist": [],
+  "createdAt": {
+    "$date": "2026-10-05T13:32:33.135Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:33.135Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a94803a5c01d1396ebf9"
+  },
+  "name": "staff",
+  "email": "staff@example.com",
+  "password": "$2b$10$crl3z8CZhKGea3le2vdI1.EJCt.yMoOrSKNWRqj.gmr4e6nPZNQCO",
+  "role": "staff",
+  "address": "",
+  "phone": "",
+  "wishlist": [],
+  "createdAt": {
+    "$date": "2026-10-05T13:42:32.619Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:42:32.619Z"
+  },
+  "__v": 0
+}]

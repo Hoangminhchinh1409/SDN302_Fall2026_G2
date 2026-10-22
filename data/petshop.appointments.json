@@ -1,0 +1,50 @@
+[{
+  "_id": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe832"
+  },
+  "user": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe82f"
+  },
+  "pet": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe830"
+  },
+  "service": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe762"
+  },
+  "date": {
+    "$date": "2026-11-01T10:00:00.000Z"
+  },
+  "status": "Confirmed",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:33.235Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:33.235Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe833"
+  },
+  "user": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe82f"
+  },
+  "pet": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe831"
+  },
+  "service": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe763"
+  },
+  "date": {
+    "$date": "2026-11-02T14:30:00.000Z"
+  },
+  "status": "Pending",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:33.241Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:33.241Z"
+  },
+  "__v": 0
+}]

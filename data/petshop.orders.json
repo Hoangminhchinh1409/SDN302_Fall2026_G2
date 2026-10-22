@@ -1,0 +1,45 @@
+[{
+  "_id": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe83a"
+  },
+  "user": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe82f"
+  },
+  "orderItems": [
+    {
+      "name": "Cat Food Item 1",
+      "qty": 1,
+      "image": "/images/sample.jpg",
+      "price": 36,
+      "product": {
+        "$oid": "6ac3a6f02ca9e4d46d5fe765"
+      },
+      "_id": {
+        "$oid": "6ac3a6f12ca9e4d46d5fe83b"
+      }
+    }
+  ],
+  "shippingAddress": {
+    "address": "123 Main St",
+    "city": "Hanoi",
+    "postalCode": "100000",
+    "country": "Vietnam"
+  },
+  "paymentMethod": "Cash on Delivery",
+  "itemsPrice": 36,
+  "taxPrice": 0,
+  "shippingPrice": 10,
+  "totalPrice": 46,
+  "couponCode": "SUMMER20",
+  "discountAmount": 0,
+  "status": "Chờ xác nhận",
+  "isPaid": false,
+  "isDelivered": false,
+  "createdAt": {
+    "$date": "2026-10-05T13:32:33.278Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:33.278Z"
+  },
+  "__v": 0
+}]

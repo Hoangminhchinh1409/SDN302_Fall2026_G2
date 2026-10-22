@@ -1,0 +1,48 @@
+[{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe762"
+  },
+  "name": "Dog Grooming Basic",
+  "description": "Bath, brush, and nail trim",
+  "price": 35,
+  "durationMinutes": 60,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.906Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.906Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe763"
+  },
+  "name": "Cat Grooming Basic",
+  "description": "Bath and brush out",
+  "price": 40,
+  "durationMinutes": 45,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.906Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.906Z"
+  }
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe764"
+  },
+  "name": "Pet Hotel (1 Night)",
+  "description": "Overnight stay with food included",
+  "price": 25,
+  "durationMinutes": 1440,
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.906Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.906Z"
+  }
+}]

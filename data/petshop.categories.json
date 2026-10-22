@@ -1,0 +1,84 @@
+[{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe756"
+  },
+  "name": "Cat Food",
+  "description": "Description for Cat Food",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.814Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.814Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe757"
+  },
+  "name": "Bowls",
+  "description": "Description for Bowls",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.823Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.823Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe758"
+  },
+  "name": "Clothes",
+  "description": "Description for Clothes",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.830Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.830Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe759"
+  },
+  "name": "Food",
+  "description": "Description for Food",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.838Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.838Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe75a"
+  },
+  "name": "Toys",
+  "description": "Description for Toys",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.846Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.846Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe75b"
+  },
+  "name": "Beds",
+  "description": "Description for Beds",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.854Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.854Z"
+  },
+  "__v": 0
+}]

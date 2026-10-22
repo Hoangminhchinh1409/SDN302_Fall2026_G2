@@ -1,0 +1,36 @@
+[{
+  "_id": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe835"
+  },
+  "user": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe82f"
+  },
+  "items": [
+    {
+      "product": {
+        "$oid": "6ac3a6f02ca9e4d46d5fe765"
+      },
+      "quantity": 2,
+      "variantInfo": "Large",
+      "_id": {
+        "$oid": "6ac3a6f12ca9e4d46d5fe836"
+      }
+    },
+    {
+      "product": {
+        "$oid": "6ac3a6f02ca9e4d46d5fe766"
+      },
+      "quantity": 1,
+      "_id": {
+        "$oid": "6ac3a6f12ca9e4d46d5fe837"
+      }
+    }
+  ],
+  "createdAt": {
+    "$date": "2026-10-05T13:32:33.256Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:33.256Z"
+  },
+  "__v": 0
+}]

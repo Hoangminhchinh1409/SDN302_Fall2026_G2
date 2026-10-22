@@ -1,0 +1,18 @@
+[{
+  "_id": {
+    "$oid": "6ac3a6f12ca9e4d46d5fe834"
+  },
+  "code": "SUMMER20",
+  "discountPercentage": 20,
+  "expiryDate": {
+    "$date": "2027-01-01T00:00:00.000Z"
+  },
+  "isActive": true,
+  "createdAt": {
+    "$date": "2026-10-05T13:32:33.246Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:33.246Z"
+  },
+  "__v": 0
+}]

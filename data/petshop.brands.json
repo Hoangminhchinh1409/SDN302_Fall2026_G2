@@ -1,0 +1,84 @@
+[{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe75c"
+  },
+  "name": "Natural pet",
+  "description": "Quality pet products from Natural pet",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.862Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.862Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe75d"
+  },
+  "name": "Pet spa",
+  "description": "Quality pet products from Pet spa",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.868Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.868Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe75e"
+  },
+  "name": "Dogs food",
+  "description": "Quality pet products from Dogs food",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.874Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.874Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe75f"
+  },
+  "name": "Whiskas",
+  "description": "Quality pet products from Whiskas",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.881Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.881Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe760"
+  },
+  "name": "Meow pet",
+  "description": "Quality pet products from Meow pet",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.890Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.890Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6ac3a6f02ca9e4d46d5fe761"
+  },
+  "name": "Snack mix",
+  "description": "Quality pet products from Snack mix",
+  "createdAt": {
+    "$date": "2026-10-05T13:32:32.897Z"
+  },
+  "updatedAt": {
+    "$date": "2026-10-05T13:32:32.897Z"
+  },
+  "__v": 0
+}]
