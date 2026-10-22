@@ -56,11 +56,10 @@ const Header = () => {
             <Link
               key={link.name}
               to={link.path}
-              className={`${
-                location.pathname === link.path || (location.pathname === '/' && link.path === '/')
+              className={`${location.pathname === link.path || (location.pathname === '/' && link.path === '/')
                   ? 'text-brand-orange border-b-2 border-brand-orange pb-1'
                   : 'text-brand-dark hover:text-brand-orange transition-colors'
-              }`}
+                }`}
             >
               {link.name}
             </Link>
@@ -70,18 +69,18 @@ const Header = () => {
         {/* Actions */}
         <div className="flex items-center gap-5">
           <form onSubmit={handleSearch} className="relative hidden md:block">
-            <input 
-              type="text" 
-              placeholder="Search products..." 
+            <input
+              type="text"
+              placeholder="Search products..."
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
-              className="bg-brand-gray rounded-full py-2 px-5 pr-10 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange w-48 lg:w-64" 
+              className="bg-brand-gray rounded-full py-2 px-5 pr-10 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange w-48 lg:w-64"
             />
             <button type="submit" aria-label="Search" className="absolute right-4 top-2.5 text-gray-400 hover:text-brand-orange focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange rounded-full">
               <i className="fas fa-search" aria-hidden="true"></i>
             </button>
           </form>
-          
+
           {user ? (
             <div className="relative group hidden sm:block">
               <button aria-label="User menu" className="text-xl text-brand-dark hover:text-brand-orange transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange rounded-md px-2 py-1">
@@ -118,7 +117,7 @@ const Header = () => {
             )}
           </Link>
           {/* Mobile Menu Toggle */}
-          <button 
+          <button
             aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
             className="lg:hidden text-2xl text-brand-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange rounded-md px-2 py-1"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
