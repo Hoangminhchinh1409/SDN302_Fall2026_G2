@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useCartStore from '../../store/useCartStore';
 import useAuthStore from '../../store/useAuthStore';
+import api from '../../api/axios';
 
 const Cart = () => {
   const {
@@ -15,10 +16,20 @@ const Cart = () => {
     getTaxPrice,
     getTotalPrice,
     getTotalItems,
+    appliedCoupon,
+    applyCoupon,
+    removeCoupon,
+    getDiscountAmount,
+    error,
+    clearError,
   } = useCartStore();
 
   const { user } = useAuthStore();
   const navigate = useNavigate();
+
+  const [couponInput, setCouponInput] = useState('');
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponMsg, setCouponMsg] = useState(null);
 
   useEffect(() => {
     fetchCart();
@@ -27,12 +38,27 @@ const Cart = () => {
   const itemsPrice = getItemsPrice();
   const shippingPrice = getShippingPrice();
   const taxPrice = getTaxPrice();
+  const discountAmount = getDiscountAmount();
   const totalPrice = getTotalPrice();
   const totalItems = getTotalItems();
 
   const freeShippingThreshold = 100;
   const freeShippingDifference = Math.max(0, freeShippingThreshold - itemsPrice);
   const freeShippingProgress = Math.min(100, (itemsPrice / freeShippingThreshold) * 100);
+
+  const handleApplyCoupon = async () => {
+    if (!couponInput.trim()) return;
+    setCouponLoading(true);
+    setCouponMsg(null);
+    const result = await applyCoupon(couponInput.trim());
+    setCouponLoading(false);
+    if (result.success) {
+      setCouponMsg({ type: 'success', text: result.message });
+      setCouponInput('');
+    } else {
+      setCouponMsg({ type: 'error', text: result.message });
+    }
+  };
 
   const checkoutHandler = () => {
     if (!user) {
@@ -58,6 +84,22 @@ const Cart = () => {
             <i className="fas fa-arrow-left text-xs"></i> Continue Shopping
           </Link>
         </div>
+
+        {/* Error notification banner */}
+        {error && (
+          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <i className="fas fa-exclamation-circle text-red-500"></i>
+              <span>{error}</span>
+            </div>
+            <button
+              onClick={clearError}
+              className="text-red-400 hover:text-red-700 text-xs font-bold cursor-pointer"
+            >
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+        )}
 
         {cartItems.length === 0 ? (
           <div className="text-center py-16 px-4 bg-white rounded-2xl border border-gray-200 shadow-sm max-w-xl mx-auto">
@@ -191,7 +233,7 @@ const Cart = () => {
             </div>
 
             {/* Cart Summary Card */}
-            <div className="w-full lg:w-1/3 sticky top-24">
+            <div className="w-full lg:w-1/3 sticky top-24 space-y-4">
               <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
                 <h2 className="text-xl font-extrabold text-brand-dark mb-4 pb-3 border-b border-gray-100 flex items-center gap-2">
                   <i className="far fa-credit-card text-brand-orange text-lg"></i>
@@ -219,6 +261,13 @@ const Cart = () => {
                     <span className="font-semibold text-brand-dark">${taxPrice.toFixed(2)}</span>
                   </div>
 
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-emerald-600 font-bold">
+                      <span>Voucher ({appliedCoupon?.code})</span>
+                      <span>-${discountAmount.toFixed(2)}</span>
+                    </div>
+                  )}
+
                   <div className="pt-3 border-t border-gray-100 flex justify-between items-baseline">
                     <span className="text-base font-bold text-brand-dark">Total</span>
                     <div className="text-right">
@@ -228,6 +277,49 @@ const Cart = () => {
                       <p className="text-[11px] text-gray-400">Includes taxes & shipping</p>
                     </div>
                   </div>
+                </div>
+
+                {/* Voucher input in Cart */}
+                <div className="pt-2 pb-4 border-t border-gray-100 mb-2">
+                  {appliedCoupon ? (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between text-xs">
+                      <div>
+                        <span className="font-bold text-emerald-800">{appliedCoupon.code}</span>
+                        <p className="text-[10px] text-emerald-600 font-medium">Đã giảm ${discountAmount.toFixed(2)}</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={removeCoupon}
+                        className="text-red-500 hover:text-red-700 font-bold text-[11px] cursor-pointer underline"
+                      >
+                        Bỏ mã
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        placeholder="Mã giảm giá..."
+                        value={couponInput}
+                        onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                        className="flex-1 border border-gray-200 rounded-xl px-3 py-2 text-xs uppercase font-bold outline-none focus:ring-1 focus:ring-brand-orange"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={couponLoading || !couponInput.trim()}
+                        className="bg-brand-dark text-white px-3 py-2 rounded-xl text-xs font-bold hover:bg-brand-orange transition-colors disabled:opacity-50 cursor-pointer"
+                      >
+                        {couponLoading ? '...' : 'Áp dụng'}
+                      </button>
+                    </div>
+                  )}
+
+                  {couponMsg && (
+                    <p className={`text-[11px] mt-1.5 ${couponMsg.type === 'success' ? 'text-emerald-600' : 'text-red-500'}`}>
+                      {couponMsg.text}
+                    </p>
+                  )}
                 </div>
 
                 <button

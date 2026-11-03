@@ -14,6 +14,14 @@ const useAuthStore = create(
         try {
           const { data } = await api.post('/users/login', { email, password });
           set({ user: data, isLoading: false });
+
+          // Sync cart after login
+          try {
+            const useCartStore = (await import('./useCartStore')).default;
+            await useCartStore.getState().syncCartWithBackend();
+          } catch (syncErr) {
+            console.error('Cart sync error upon login:', syncErr);
+          }
         } catch (error) {
           set({
             error: error.response?.data?.message || 'Login failed',
@@ -27,6 +35,14 @@ const useAuthStore = create(
         try {
           const { data } = await api.post('/users', { name, email, password });
           set({ user: data, isLoading: false });
+
+          // Sync cart after register
+          try {
+            const useCartStore = (await import('./useCartStore')).default;
+            await useCartStore.getState().syncCartWithBackend();
+          } catch (syncErr) {
+            console.error('Cart sync error upon register:', syncErr);
+          }
         } catch (error) {
           set({
             error: error.response?.data?.message || 'Registration failed',
@@ -41,14 +57,14 @@ const useAuthStore = create(
           set({ user: null });
         } catch (error) {
           console.error('Logout error', error);
-          set({ user: null }); // logout locally anyway
+          set({ user: null });
         }
       },
 
       clearError: () => set({ error: null })
     }),
     {
-      name: 'auth-storage', // name of the item in the storage (must be unique)
+      name: 'auth-storage',
     }
   )
 );

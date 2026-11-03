@@ -63,6 +63,16 @@ const orderSchema = new mongoose.Schema({
     enum: ['Chờ xác nhận', 'Đang đóng gói', 'Đang giao', 'Hoàn thành', 'Đã hủy'],
     default: 'Chờ xác nhận',
   },
+  cancelledAt: {
+    type: Date,
+  },
+  cancelReason: {
+    type: String,
+  },
+  cancelledBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
   isPaid: {
     type: Boolean,
     required: true,

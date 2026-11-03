@@ -28,10 +28,11 @@ const useOrderStore = create((set) => ({
     }
   },
 
-  fetchMyOrders: async () => {
+  fetchMyOrders: async (status = '') => {
     set({ isLoading: true, error: null });
     try {
-      const { data } = await api.get('/orders/myorders');
+      const url = status ? `/orders/myorders?status=${encodeURIComponent(status)}` : '/orders/myorders';
+      const { data } = await api.get(url);
       set({ myOrders: data, isLoading: false });
     } catch (error) {
       set({ 
@@ -51,6 +52,27 @@ const useOrderStore = create((set) => ({
         error: error.response?.data?.message || 'Failed to fetch order details', 
         isLoading: false 
       });
+    }
+  },
+
+  cancelOrder: async (id, reason = '') => {
+    set({ isLoading: true, error: null, successMessage: null });
+    try {
+      const { data } = await api.put(`/orders/${id}/cancel`, { reason });
+      set((state) => ({
+        orderDetails: data,
+        myOrders: state.myOrders.map((order) => (order._id === id ? data : order)),
+        isLoading: false,
+        successMessage: 'Order cancelled successfully',
+      }));
+      return { success: true, order: data };
+    } catch (error) {
+      const errorMsg = error.response?.data?.message || 'Failed to cancel order';
+      set({ 
+        error: errorMsg, 
+        isLoading: false 
+      });
+      return { success: false, message: errorMsg };
     }
   },
 
