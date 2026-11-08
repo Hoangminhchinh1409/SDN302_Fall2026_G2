@@ -32,6 +32,18 @@ const useCouponStore = create((set, get) => ({
     }
   },
 
+  updateCoupon: async (id, couponData) => {
+    try {
+      const { data } = await api.put(`/coupons/${id}`, couponData);
+      set({
+        coupons: get().coupons.map((c) => (c._id === id ? data : c)),
+      });
+      return { success: true, coupon: data };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || 'Failed to update coupon' };
+    }
+  },
+
   deleteCoupon: async (id) => {
     try {
       await api.delete(`/coupons/${id}`);

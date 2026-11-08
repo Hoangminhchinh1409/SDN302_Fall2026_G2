@@ -1,7 +1,33 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import api from '../api/axios';
 
 const Contact = () => {
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', message: '' });
+  const [submitting, setSubmitting] = useState(false);
+  const [feedback, setFeedback] = useState(null);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setFeedback(null);
+    setSubmitting(true);
+    try {
+      const { data } = await api.post('/contact', form);
+      setFeedback({ type: 'success', text: data.message });
+      setForm({ firstName: '', lastName: '', email: '', message: '' });
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        text: err.response?.data?.message || 'Không thể gửi tin nhắn. Vui lòng thử lại sau.',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
   return (
     <>
       {/* Hero Section */}
@@ -32,27 +58,87 @@ const Contact = () => {
         <div className="flex flex-col md:flex-row gap-16 mb-16">
           {/* Contact Form */}
           <div className="md:w-1/2">
-            <form className="bg-brand-gray/30 p-10 rounded-2xl">
+            <form className="bg-brand-gray/30 p-10 rounded-2xl" onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm font-semibold text-brand-dark mb-2">First name</label>
-                  <input type="text" className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none" placeholder="First name" />
+                  <label htmlFor="contact-firstname" className="block text-sm font-semibold text-brand-dark mb-2">First name</label>
+                  <input
+                    id="contact-firstname"
+                    name="firstName"
+                    type="text"
+                    required
+                    autoComplete="given-name"
+                    spellCheck="false"
+                    value={form.firstName}
+                    onChange={handleChange}
+                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-brand-orange"
+                    placeholder="First name"
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-brand-dark mb-2">Last name</label>
-                  <input type="text" className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none" placeholder="Last name" />
+                  <label htmlFor="contact-lastname" className="block text-sm font-semibold text-brand-dark mb-2">Last name</label>
+                  <input
+                    id="contact-lastname"
+                    name="lastName"
+                    type="text"
+                    required
+                    autoComplete="family-name"
+                    spellCheck="false"
+                    value={form.lastName}
+                    onChange={handleChange}
+                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-brand-orange"
+                    placeholder="Last name"
+                  />
                 </div>
               </div>
               <div className="mb-6">
-                <label className="block text-sm font-semibold text-brand-dark mb-2">Email address</label>
-                <input type="email" className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none" placeholder="Email address" />
+                <label htmlFor="contact-email" className="block text-sm font-semibold text-brand-dark mb-2">Email address</label>
+                <input
+                  id="contact-email"
+                  name="email"
+                  type="email"
+                  required
+                  autoComplete="email"
+                  spellCheck="false"
+                  value={form.email}
+                  onChange={handleChange}
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-brand-orange"
+                  placeholder="Email address"
+                />
               </div>
               <div className="mb-6">
-                <label className="block text-sm font-semibold text-brand-dark mb-2">Message</label>
-                <textarea rows="6" className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none resize-none" placeholder="Your message..."></textarea>
+                <label htmlFor="contact-message" className="block text-sm font-semibold text-brand-dark mb-2">Message</label>
+                <textarea
+                  id="contact-message"
+                  name="message"
+                  rows="6"
+                  required
+                  minLength="10"
+                  value={form.message}
+                  onChange={handleChange}
+                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none resize-none focus:ring-2 focus:ring-brand-orange"
+                  placeholder="Your message..."
+                ></textarea>
               </div>
-              <button type="button" className="bg-brand-orange text-white font-bold py-3 px-8 rounded-lg hover:bg-orange-600 transition-colors">
-                Send Message
+
+              {feedback && (
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className={`mb-6 p-3 rounded-lg text-sm font-medium ${
+                    feedback.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  }`}
+                >
+                  {feedback.text}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="bg-brand-orange text-white font-bold py-3 px-8 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 cursor-pointer"
+              >
+                {submitting ? 'Đang gửi…' : 'Send Message'}
               </button>
             </form>
           </div>

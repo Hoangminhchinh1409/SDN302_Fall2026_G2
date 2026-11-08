@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import useCouponStore from '../../store/useCouponStore';
 
+const DEFAULT_FORM = () => ({
+  code: '',
+  discountPercentage: 10,
+  minOrderValue: 0,
+  maxDiscountAmount: 0,
+  description: '',
+  expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+});
+
 const AdminCoupons = () => {
-  const { coupons, fetchCoupons, createCoupon, deleteCoupon, loading, error } = useCouponStore();
+  const { coupons, fetchCoupons, createCoupon, updateCoupon, deleteCoupon, loading, error } = useCouponStore();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    code: '',
-    discountPercentage: 10,
-    minOrderValue: 0,
-    maxDiscountAmount: 0,
-    description: '',
-    expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-  });
+  const [editingId, setEditingId] = useState(null);
+  const [formData, setFormData] = useState(DEFAULT_FORM());
   const [formError, setFormError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -20,28 +23,48 @@ const AdminCoupons = () => {
     fetchCoupons();
   }, [fetchCoupons]);
 
+  const openCreate = () => {
+    setEditingId(null);
+    setFormData(DEFAULT_FORM());
+    setFormError(null);
+    setIsModalOpen(true);
+  };
+
+  const openEdit = (coupon) => {
+    setEditingId(coupon._id);
+    setFormData({
+      code: coupon.code,
+      discountPercentage: coupon.discountPercentage,
+      minOrderValue: coupon.minOrderValue || 0,
+      maxDiscountAmount: coupon.maxDiscountAmount || 0,
+      description: coupon.description || '',
+      expiryDate: new Date(coupon.expiryDate).toISOString().split('T')[0],
+    });
+    setFormError(null);
+    setIsModalOpen(true);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError(null);
     setIsSubmitting(true);
 
-    const res = await createCoupon(formData);
+    const res = editingId
+      ? await updateCoupon(editingId, formData)
+      : await createCoupon(formData);
     setIsSubmitting(false);
 
     if (res.success) {
       setIsModalOpen(false);
-      setFormData({
-        code: '',
-        discountPercentage: 10,
-        minOrderValue: 0,
-        maxDiscountAmount: 0,
-        description: '',
-        expiryDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-      });
-      fetchCoupons();
+      setFormData(DEFAULT_FORM());
+      setEditingId(null);
     } else {
       setFormError(res.message);
     }
+  };
+
+  const handleToggleActive = async (coupon) => {
+    await updateCoupon(coupon._id, { isActive: !coupon.isActive });
   };
 
   const handleDelete = async (id, code) => {
@@ -58,7 +81,7 @@ const AdminCoupons = () => {
           <p className="text-xs text-gray-500 mt-1">Tạo và cấu hình các chương trình khuyến mãi cho khách hàng</p>
         </div>
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={openCreate}
           className="bg-brand-orange text-white px-4 py-2.5 rounded-xl font-bold text-xs hover:bg-orange-600 transition-colors shadow-xs flex items-center gap-2 cursor-pointer"
         >
           <i className="fas fa-plus"></i> Tạo mã mới
@@ -80,6 +103,7 @@ const AdminCoupons = () => {
                 <th className="p-4">ĐƠN TỐI THIỂU</th>
                 <th className="p-4">HẠN SỬ DỤNG</th>
                 <th className="p-4">ĐÃ DÙNG</th>
+                <th className="p-4">TRẠNG THÁI</th>
                 <th className="p-4 text-right">HÀNH ĐỘNG</th>
               </tr>
             </thead>
@@ -105,7 +129,26 @@ const AdminCoupons = () => {
                   <td className="p-4 text-xs font-semibold text-gray-700">
                     {coupon.usedCount || 0} lượt
                   </td>
-                  <td className="p-4 text-right">
+                  <td className="p-4">
+                    <button
+                      onClick={() => handleToggleActive(coupon)}
+                      title="Bấm để bật/tắt mã giảm giá"
+                      className={`px-2.5 py-1 rounded-full text-xs font-bold cursor-pointer transition-colors ${
+                        coupon.isActive
+                          ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                          : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
+                      }`}
+                    >
+                      {coupon.isActive ? 'Đang chạy' : 'Tạm tắt'}
+                    </button>
+                  </td>
+                  <td className="p-4 text-right space-x-3">
+                    <button
+                      onClick={() => openEdit(coupon)}
+                      className="text-brand-orange hover:text-orange-700 text-xs font-semibold cursor-pointer"
+                    >
+                      <i className="fas fa-pen mr-1"></i> Sửa
+                    </button>
                     <button
                       onClick={() => handleDelete(coupon._id, coupon.code)}
                       className="text-red-500 hover:text-red-700 text-xs font-semibold cursor-pointer"
@@ -117,7 +160,7 @@ const AdminCoupons = () => {
               ))}
               {coupons.length === 0 && (
                 <tr>
-                  <td colSpan="7" className="p-8 text-center text-gray-400 text-sm">
+                  <td colSpan="8" className="p-8 text-center text-gray-400 text-sm">
                     Chưa có mã giảm giá nào. Hãy tạo mã đầu tiên!
                   </td>
                 </tr>
@@ -127,15 +170,17 @@ const AdminCoupons = () => {
         </div>
       )}
 
-      {/* Modal Create Coupon */}
+      {/* Modal Create/Edit Coupon */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-xs">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-gray-100">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg text-brand-dark">Tạo Voucher mới</h3>
+              <h3 className="font-bold text-lg text-brand-dark">
+                {editingId ? `Sửa voucher ${formData.code}` : 'Tạo Voucher mới'}
+              </h3>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 text-sm"
+                className="text-gray-400 hover:text-gray-600 text-sm cursor-pointer"
               >
                 <i className="fas fa-times"></i>
               </button>
@@ -185,15 +230,27 @@ const AdminCoupons = () => {
                 </div>
               </div>
 
-              <div>
-                <label className="font-bold text-gray-700 block mb-1">Ngày hết hạn*</label>
-                <input
-                  type="date"
-                  required
-                  value={formData.expiryDate}
-                  onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
-                  className="w-full border border-gray-300 rounded-xl p-2.5 focus:ring-2 focus:ring-brand-orange outline-none"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-gray-700 block mb-1">Giảm tối đa ($, 0 = không giới hạn)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.maxDiscountAmount}
+                    onChange={(e) => setFormData({ ...formData, maxDiscountAmount: Number(e.target.value) })}
+                    className="w-full border border-gray-300 rounded-xl p-2.5 focus:ring-2 focus:ring-brand-orange outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-gray-700 block mb-1">Ngày hết hạn*</label>
+                  <input
+                    type="date"
+                    required
+                    value={formData.expiryDate}
+                    onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                    className="w-full border border-gray-300 rounded-xl p-2.5 focus:ring-2 focus:ring-brand-orange outline-none"
+                  />
+                </div>
               </div>
 
               <div>
@@ -220,7 +277,7 @@ const AdminCoupons = () => {
                   disabled={isSubmitting}
                   className="px-5 py-2 rounded-xl bg-brand-orange hover:bg-orange-600 text-white font-bold transition-colors cursor-pointer"
                 >
-                  {isSubmitting ? 'Đang tạo...' : 'Tạo voucher'}
+                  {isSubmitting ? 'Đang lưu...' : editingId ? 'Lưu thay đổi' : 'Tạo voucher'}
                 </button>
               </div>
             </form>

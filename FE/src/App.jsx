@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense } from 'react';
 import ScrollToTop from './components/routing/ScrollToTop';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -22,18 +23,28 @@ import OrderDetails from './pages/orders/OrderDetails';
 import PrivateRoute from './components/routing/PrivateRoute';
 import AdminRoute from './components/routing/AdminRoute';
 import DashboardLayout from './components/dashboard/DashboardLayout';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import ProductList from './pages/admin/ProductList';
-import ProductEdit from './pages/admin/ProductEdit';
-import ProductCreate from './pages/admin/ProductCreate';
-import OrderList from './pages/admin/OrderList';
-import UserList from './pages/admin/UserList';
-import AdminAppointments from './pages/admin/AdminAppointments';
-import AdminBrands from './pages/admin/AdminBrands';
-import AdminCoupons from './pages/admin/AdminCoupons';
-import AdminServices from './pages/admin/AdminServices';
+import NotFound from './pages/NotFound';
 import StaffRoute from './components/routing/StaffRoute';
-import StaffDashboard from './pages/staff/StaffDashboard';
+
+// Code-split heavier admin/staff pages (loaded on demand)
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const ProductList = lazy(() => import('./pages/admin/ProductList'));
+const ProductEdit = lazy(() => import('./pages/admin/ProductEdit'));
+const ProductCreate = lazy(() => import('./pages/admin/ProductCreate'));
+const OrderList = lazy(() => import('./pages/admin/OrderList'));
+const UserList = lazy(() => import('./pages/admin/UserList'));
+const AdminAppointments = lazy(() => import('./pages/admin/AdminAppointments'));
+const AdminBrands = lazy(() => import('./pages/admin/AdminBrands'));
+const AdminCoupons = lazy(() => import('./pages/admin/AdminCoupons'));
+const AdminServices = lazy(() => import('./pages/admin/AdminServices'));
+const StaffDashboard = lazy(() => import('./pages/staff/StaffDashboard'));
+
+const DashboardFallback = () => (
+  <div className="flex items-center justify-center py-20 text-gray-400" role="status" aria-live="polite">
+    <i className="fas fa-circle-notch fa-spin text-2xl mr-3"></i>
+    <span>Đang tải…</span>
+  </div>
+);
 
 function App() {
   return (
@@ -67,24 +78,29 @@ function App() {
         </Route>
 
         <Route path="/admin" element={<AdminRoute><DashboardLayout /></AdminRoute>}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="products" element={<ProductList />} />
-          <Route path="product/new" element={<ProductCreate />} />
-          <Route path="product/:id/edit" element={<ProductEdit />} />
-          <Route path="orders" element={<OrderList />} />
-          <Route path="users" element={<UserList />} />
-          <Route path="appointments" element={<AdminAppointments />} />
-          <Route path="brands" element={<AdminBrands />} />
-          <Route path="coupons" element={<AdminCoupons />} />
-          <Route path="services" element={<AdminServices />} />
+          <Route index element={<Suspense fallback={<DashboardFallback />}><AdminDashboard /></Suspense>} />
+          <Route path="products" element={<Suspense fallback={<DashboardFallback />}><ProductList /></Suspense>} />
+          <Route path="product/new" element={<Suspense fallback={<DashboardFallback />}><ProductCreate /></Suspense>} />
+          <Route path="product/:id/edit" element={<Suspense fallback={<DashboardFallback />}><ProductEdit /></Suspense>} />
+          <Route path="orders" element={<Suspense fallback={<DashboardFallback />}><OrderList /></Suspense>} />
+          <Route path="users" element={<Suspense fallback={<DashboardFallback />}><UserList /></Suspense>} />
+          <Route path="appointments" element={<Suspense fallback={<DashboardFallback />}><AdminAppointments /></Suspense>} />
+          <Route path="brands" element={<Suspense fallback={<DashboardFallback />}><AdminBrands /></Suspense>} />
+          <Route path="coupons" element={<Suspense fallback={<DashboardFallback />}><AdminCoupons /></Suspense>} />
+          <Route path="services" element={<Suspense fallback={<DashboardFallback />}><AdminServices /></Suspense>} />
         </Route>
 
         {/* Staff Routes */}
         <Route path="/staff" element={<StaffRoute><DashboardLayout /></StaffRoute>}>
-          <Route index element={<StaffDashboard />} />
-          <Route path="orders" element={<OrderList />} />
-          <Route path="inventory" element={<ProductList />} />
-          <Route path="appointments" element={<AdminAppointments />} />
+          <Route index element={<Suspense fallback={<DashboardFallback />}><StaffDashboard /></Suspense>} />
+          <Route path="orders" element={<Suspense fallback={<DashboardFallback />}><OrderList /></Suspense>} />
+          <Route path="inventory" element={<Suspense fallback={<DashboardFallback />}><ProductList /></Suspense>} />
+          <Route path="appointments" element={<Suspense fallback={<DashboardFallback />}><AdminAppointments /></Suspense>} />
+        </Route>
+
+        {/* 404 Not Found */}
+        <Route path="*" element={<Layout />}>
+          <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
     </BrowserRouter>

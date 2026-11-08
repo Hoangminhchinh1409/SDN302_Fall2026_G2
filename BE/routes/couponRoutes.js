@@ -6,6 +6,7 @@ const {
   checkCoupon,
   applyCoupon,
   createCoupon,
+  updateCoupon,
   deleteCoupon,
 } = require('../controllers/couponController');
 const { protect, admin } = require('../middleware/authMiddleware');
@@ -22,6 +23,9 @@ router
   .route('/:code')
   .get(protect, checkCoupon);
 
-router.delete('/:id', protect, admin, deleteCoupon);
+router
+  .route('/:id')
+  .put(protect, admin, updateCoupon)
+  .delete(protect, admin, deleteCoupon);
 
 module.exports = router;
