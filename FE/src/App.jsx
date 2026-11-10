@@ -13,6 +13,7 @@ import Profile from './pages/auth/Profile';
 import Cart from './pages/cart/Cart';
 import Wishlist from './pages/Wishlist';
 import BookAppointment from './pages/BookAppointment';
+import MyAppointments from './pages/MyAppointments';
 import PetProfiles from './pages/PetProfiles';
 import Shipping from './pages/checkout/Shipping';
 import Payment from './pages/checkout/Payment';
@@ -50,13 +51,14 @@ function App() {
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="cart" element={<Cart />} />
-          
+
           {/* Protected Routes for Customer/Guest */}
           <Route path="" element={<PrivateRoute />}>
             <Route path="profile" element={<Profile />} />
             <Route path="wishlist" element={<Wishlist />} />
             <Route path="pets" element={<PetProfiles />} />
             <Route path="book-appointment" element={<BookAppointment />} />
+            <Route path="appointments" element={<MyAppointments />} />
             <Route path="shipping" element={<Shipping />} />
             <Route path="payment" element={<Payment />} />
             <Route path="placeorder" element={<PlaceOrder />} />

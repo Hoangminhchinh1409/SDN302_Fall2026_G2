@@ -102,7 +102,7 @@ const updateOrderStatus = async (req, res) => {
     if (order) {
       order.status = req.body.status || order.status;
 
-      if (order.status === 'Đang giao' && !order.isDelivered) {
+      if (order.status === 'Hoàn thành' && !order.isDelivered) {
         order.isDelivered = true;
         order.deliveredAt = Date.now();
       }
@@ -118,10 +118,31 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+const markOrderDelivered = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    order.status = 'Hoàn thành';
+    order.isDelivered = true;
+    order.deliveredAt = order.deliveredAt || Date.now();
+
+    const updatedOrder = await order.save();
+    return res.json(updatedOrder);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 module.exports = {
   addOrderItems,
   getOrderById,
   getMyOrders,
   getOrders,
   updateOrderStatus,
+  markOrderDelivered,
 };

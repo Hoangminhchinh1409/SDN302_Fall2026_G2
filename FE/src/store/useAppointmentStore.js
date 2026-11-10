@@ -26,6 +26,36 @@ const useAppointmentStore = create((set) => ({
       set({ error: error.response?.data?.message || error.message, loading: false });
       return false;
     }
+  },
+
+  updateAppointmentStatus: async (id, status) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await api.put(`/appointments/${id}/status`, { status });
+      set((state) => ({
+        appointments: state.appointments.map((appointment) => appointment._id === id ? data : appointment),
+        loading: false
+      }));
+      return true;
+    } catch (error) {
+      set({ error: error.response?.data?.message || error.message, loading: false });
+      return false;
+    }
+  },
+
+  cancelAppointment: async (id) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await api.put(`/appointments/${id}/cancel`);
+      set((state) => ({
+        appointments: state.appointments.map((appointment) => appointment._id === id ? data : appointment),
+        loading: false
+      }));
+      return true;
+    } catch (error) {
+      set({ error: error.response?.data?.message || error.message, loading: false });
+      return false;
+    }
   }
 }));
 

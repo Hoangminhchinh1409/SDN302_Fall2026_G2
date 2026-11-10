@@ -1,18 +1,35 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import useAppointmentStore from '../../store/useAppointmentStore';
 
 const AdminAppointments = () => {
-  const { appointments, fetchAppointments, loading, error } = useAppointmentStore();
+  const { appointments, fetchAppointments, updateAppointmentStatus, loading, error } = useAppointmentStore();
+  const [draftStatuses, setDraftStatuses] = useState({});
 
   useEffect(() => {
     fetchAppointments();
   }, [fetchAppointments]);
+
+  const saveStatus = async (appointment) => {
+    const status = draftStatuses[appointment._id] || appointment.status;
+    if (status === appointment.status) return;
+
+    const saved = await updateAppointmentStatus(appointment._id, status);
+    if (saved) {
+      setDraftStatuses((current) => {
+        const next = { ...current };
+        delete next[appointment._id];
+        return next;
+      });
+    }
+  };
 
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Appointments Management</h2>
       </div>
+
+      {error && <div role="alert" className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-red-700">{error}</div>}
 
       {loading ? (
         <div className="text-center py-10">Loading appointments...</div>
@@ -40,19 +57,37 @@ const AdminAppointments = () => {
                     <td className="p-4">{appt.pet?.name || 'N/A'} ({appt.pet?.type})</td>
                     <td className="p-4">{appt.service?.name || 'N/A'}</td>
                     <td className="p-4">
-                      <span className={`px-2 py-1 rounded text-xs font-semibold ${
-                        appt.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                        appt.status === 'Confirmed' ? 'bg-blue-100 text-blue-800' :
-                        appt.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                        'bg-red-100 text-red-800'
-                      }`}>
+                      <span className={`px-2 py-1 rounded text-xs font-semibold ${appt.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                          appt.status === 'Confirmed' ? 'bg-blue-100 text-blue-800' :
+                            appt.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                              'bg-red-100 text-red-800'
+                        }`}>
                         {appt.status}
                       </span>
                     </td>
                     <td className="p-4 text-right">
-                      <button className="text-brand-orange hover:text-orange-700 underline text-sm">
-                        Update Status
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <select
+                          aria-label={`Status for ${appt.pet?.name || 'appointment'}`}
+                          value={draftStatuses[appt._id] || appt.status}
+                          onChange={(event) => setDraftStatuses((current) => ({ ...current, [appt._id]: event.target.value }))}
+                          disabled={loading}
+                          className="rounded border border-gray-300 bg-white px-2 py-1.5 text-sm text-gray-700 focus:border-brand-orange focus:outline-none"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Confirmed">Confirmed</option>
+                          <option value="Completed">Completed</option>
+                          <option value="Cancelled">Cancelled</option>
+                        </select>
+                        <button
+                          type="button"
+                          onClick={() => saveStatus(appt)}
+                          disabled={loading || (draftStatuses[appt._id] || appt.status) === appt.status}
+                          className="rounded bg-brand-dark px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-orange disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                          Save
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

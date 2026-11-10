@@ -1,4 +1,28 @@
 const PetProfile = require('../models/PetProfile');
+const mongoose = require('mongoose');
+
+// @desc    Get one of the user's pet profiles
+// @route   GET /api/pets/:id
+// @access  Private/Owner
+const getPetProfileById = async (req, res) => {
+  if (!mongoose.isObjectIdOrHexString(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid pet ID' });
+  }
+
+  try {
+    const pet = await PetProfile.findById(req.params.id);
+    if (!pet) {
+      return res.status(404).json({ message: 'Pet not found' });
+    }
+    if (pet.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to view this pet' });
+    }
+    return res.json(pet);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: 'Server Error' });
+  }
+};
 
 // @desc    Get user's pet profiles
 // @route   GET /api/pets
@@ -73,6 +97,7 @@ const deletePetProfile = async (req, res) => {
 };
 
 module.exports = {
+  getPetProfileById,
   getMyPets,
   createPetProfile,
   updatePetProfile,

@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   getMyPets,
+  getPetProfileById,
   createPetProfile,
   updatePetProfile,
   deletePetProfile
@@ -13,6 +14,7 @@ router.route('/')
   .post(protect, createPetProfile);
 
 router.route('/:id')
+  .get(protect, getPetProfileById)
   .put(protect, updatePetProfile)
   .delete(protect, deletePetProfile);
 

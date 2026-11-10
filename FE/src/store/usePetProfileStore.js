@@ -28,6 +28,21 @@ const usePetProfileStore = create((set) => ({
     }
   },
 
+  updatePet: async (id, petData) => {
+    set({ loading: true, error: null });
+    try {
+      const { data } = await api.put(`/pets/${id}`, petData);
+      set((state) => ({
+        pets: state.pets.map((pet) => pet._id === id ? data : pet),
+        loading: false
+      }));
+      return true;
+    } catch (error) {
+      set({ error: error.response?.data?.message || error.message, loading: false });
+      return false;
+    }
+  },
+
   removePet: async (id) => {
     try {
       await api.delete(`/pets/${id}`);
