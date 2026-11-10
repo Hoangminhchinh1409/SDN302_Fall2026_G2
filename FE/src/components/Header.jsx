@@ -108,7 +108,9 @@ const Header = () => {
                     </div>
                   </div>
                   <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Profile</Link>
+                  <Link to="/addresses" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Địa chỉ giao hàng</Link>
                   <Link to="/orders/myorders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Orders</Link>
+                  <Link to="/notifications" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Thông báo đơn hàng</Link>
                   <Link to="/wishlist" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Wishlist</Link>
                   <Link to="/pets" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">My Pets</Link>
                   <Link to="/book-appointment" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Book Appointment</Link>
@@ -168,6 +170,14 @@ const Header = () => {
             >
               Login / Register
             </Link>
+          )}
+          {user && (
+            <div className="border-t border-gray-100 pt-3">
+              <Link to="/profile" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 font-medium text-brand-dark">Hồ sơ cá nhân</Link>
+              <Link to="/addresses" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 font-medium text-brand-dark">Địa chỉ giao hàng</Link>
+              <Link to="/orders/myorders" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 font-medium text-brand-dark">Lịch sử đơn hàng</Link>
+              <Link to="/notifications" onClick={() => setIsMobileMenuOpen(false)} className="block py-2 font-medium text-brand-dark">Thông báo</Link>
+            </div>
           )}
         </div>
       )}

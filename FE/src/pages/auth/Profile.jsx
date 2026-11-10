@@ -394,6 +394,14 @@ const Profile = () => {
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
               <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-3 mb-2">Quick Access</h3>
               <nav className="space-y-1">
+                <Link to="/addresses" className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-brand-orange transition-colors">
+                  <span className="flex items-center gap-3"><i className="fas fa-map-marker-alt text-gray-400 w-5"></i> Địa chỉ giao hàng</span>
+                  <i className="fas fa-chevron-right text-xs text-gray-300"></i>
+                </Link>
+                <Link to="/notifications" className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-brand-orange transition-colors">
+                  <span className="flex items-center gap-3"><i className="far fa-bell text-gray-400 w-5"></i> Thông báo đơn hàng</span>
+                  <i className="fas fa-chevron-right text-xs text-gray-300"></i>
+                </Link>
                 <Link
                   to="/orders/myorders"
                   className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-brand-orange transition-colors"

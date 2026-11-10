@@ -100,6 +100,8 @@ const PlaceOrder = () => {
         product: item.product,
       })),
       shippingAddress: {
+        recipient: shippingAddress.recipient || user?.name || '',
+        phone: shippingAddress.phone || user?.phone || '',
         address: shippingAddress.address,
         city: shippingAddress.city || 'Hanoi',
         postalCode: shippingAddress.postalCode || '100000',

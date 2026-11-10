@@ -2,10 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useOrderStore from '../../store/useOrderStore';
 import useAuthStore from '../../store/useAuthStore';
+import useCartStore from '../../store/useCartStore';
+import api from '../../api/axios';
 
 const OrderHistory = () => {
   const { myOrders, fetchMyOrders, cancelOrder, isLoading, error } = useOrderStore();
   const { user } = useAuthStore();
+  const { fetchCart } = useCartStore();
   const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState('ALL');
@@ -14,14 +17,29 @@ const OrderHistory = () => {
   const [customReason, setCustomReason] = useState('');
   const [isSubmittingCancel, setIsSubmittingCancel] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState(null);
+  const [filters, setFilters] = useState({ q: '', from: '', to: '' });
+  const [appliedFilters, setAppliedFilters] = useState({});
+  const [reorderingId, setReorderingId] = useState(null);
 
   useEffect(() => {
     if (!user) {
       navigate('/login');
     } else {
-      fetchMyOrders(activeTab === 'ALL' ? '' : activeTab);
+      fetchMyOrders(activeTab === 'ALL' ? '' : activeTab, appliedFilters);
     }
-  }, [user, navigate, fetchMyOrders, activeTab]);
+  }, [user, navigate, fetchMyOrders, activeTab, appliedFilters]);
+
+  const handleReorder = async (orderId) => {
+    setReorderingId(orderId);
+    try {
+      const { data } = await api.post(`/orders/${orderId}/reorder`);
+      await fetchCart();
+      if (data.skipped?.length) setFeedbackMsg({ type: 'error', text: `Đã thêm sản phẩm còn hàng; bỏ qua: ${data.skipped.join(', ')}` });
+      else setFeedbackMsg({ type: 'success', text: 'Đã thêm sản phẩm còn hàng vào giỏ.' });
+      navigate('/cart');
+    } catch (err) { setFeedbackMsg({ type: 'error', text: err.response?.data?.message || 'Không thể mua lại đơn hàng.' }); }
+    finally { setReorderingId(null); }
+  };
 
   const handleOpenCancelModal = (orderId) => {
     setCancellingOrderId(orderId);
@@ -137,6 +155,12 @@ const OrderHistory = () => {
         )}
 
         {/* Filter Tabs */}
+        <form onSubmit={(event) => { event.preventDefault(); setAppliedFilters(filters); }} className="mb-5 grid gap-3 rounded-xl bg-white p-4 shadow-sm sm:grid-cols-2 lg:grid-cols-[1fr_180px_180px_auto]">
+          <input aria-label="Tìm đơn theo mã hoặc sản phẩm" value={filters.q} onChange={(e) => setFilters({ ...filters, q: e.target.value })} placeholder="Tìm mã đơn hoặc tên sản phẩm" className="rounded-lg border border-gray-200 px-3 py-2 text-sm" />
+          <label className="text-xs text-gray-500">Từ ngày<input type="date" value={filters.from} onChange={(e) => setFilters({ ...filters, from: e.target.value })} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800" /></label>
+          <label className="text-xs text-gray-500">Đến ngày<input type="date" value={filters.to} onChange={(e) => setFilters({ ...filters, to: e.target.value })} className="mt-1 block w-full rounded-lg border border-gray-200 px-3 py-2 text-sm text-gray-800" /></label>
+          <button className="self-end rounded-lg bg-brand-dark px-4 py-2 text-sm font-semibold text-white hover:bg-brand-orange">Lọc đơn</button>
+        </form>
         <div className="flex flex-wrap gap-2 mb-6 border-b border-gray-200 pb-3">
           {tabs.map((tab) => (
             <button
@@ -224,6 +248,9 @@ const OrderHistory = () => {
                         >
                           <i className="fas fa-eye text-[10px]"></i> Chi tiết
                         </Link>
+                        <button type="button" onClick={() => handleReorder(order._id)} disabled={reorderingId === order._id} className="inline-flex items-center gap-1 rounded-lg bg-orange-50 px-3 py-1.5 text-xs font-semibold text-brand-orange hover:bg-orange-100 disabled:opacity-50">
+                          {reorderingId === order._id ? 'Đang thêm…' : 'Mua lại'}
+                        </button>
                         {order.status === 'Chờ xác nhận' && (
                           <button
                             type="button"

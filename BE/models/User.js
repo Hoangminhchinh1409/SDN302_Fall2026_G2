@@ -35,6 +35,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    addresses: [{
+      label: { type: String, trim: true, default: "Nhà riêng" },
+      recipient: { type: String, trim: true, required: true },
+      phone: { type: String, trim: true, required: true },
+      address: { type: String, trim: true, required: true },
+      city: { type: String, trim: true, required: true },
+      postalCode: { type: String, trim: true, default: "" },
+      country: { type: String, trim: true, default: "Việt Nam" },
+      isDefault: { type: Boolean, default: false },
+    }],
     phone: {
       type: String,
       default: "",

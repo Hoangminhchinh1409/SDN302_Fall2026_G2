@@ -28,10 +28,13 @@ const useOrderStore = create((set) => ({
     }
   },
 
-  fetchMyOrders: async (status = '') => {
+  fetchMyOrders: async (status = '', filters = {}) => {
     set({ isLoading: true, error: null });
     try {
-      const url = status ? `/orders/myorders?status=${encodeURIComponent(status)}` : '/orders/myorders';
+      const params = new URLSearchParams();
+      if (status) params.set('status', status);
+      Object.entries(filters).forEach(([key, value]) => { if (value) params.set(key, value); });
+      const url = `/orders/myorders${params.toString() ? `?${params}` : ''}`;
       const { data } = await api.get(url);
       set({ myOrders: data, isLoading: false });
     } catch (error) {

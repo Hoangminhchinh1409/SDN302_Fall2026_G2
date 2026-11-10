@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useCartStore from '../../store/useCartStore';
 import useAuthStore from '../../store/useAuthStore';
+import api from '../../api/axios';
 
 const Shipping = () => {
   const { shippingAddress, saveShippingAddress, cartItems } = useCartStore();
@@ -13,6 +14,21 @@ const Shipping = () => {
   const [postalCode, setPostalCode] = useState(shippingAddress?.postalCode || '100000');
   const [country, setCountry] = useState(shippingAddress?.country || 'Vietnam');
   const [phone, setPhone] = useState(shippingAddress?.phone || user?.phone || '');
+  const [recipient, setRecipient] = useState(shippingAddress?.recipient || user?.name || '');
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('');
+
+  useEffect(() => {
+    api.get('/users/addresses').then(({ data }) => {
+      setSavedAddresses(data);
+      const selected = data.find((item) => item.isDefault);
+      if (selected && !shippingAddress?.address) {
+        setSelectedAddressId(selected._id);
+        setAddress(selected.address); setCity(selected.city); setPostalCode(selected.postalCode || '');
+        setCountry(selected.country || 'Việt Nam'); setPhone(selected.phone); setRecipient(selected.recipient);
+      }
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (cartItems.length === 0) {
@@ -22,7 +38,7 @@ const Shipping = () => {
 
   const submitHandler = (e) => {
     e.preventDefault();
-    saveShippingAddress({ address, city, postalCode, country, phone });
+    saveShippingAddress({ address, city, postalCode, country, phone, recipient });
     navigate('/payment');
   };
 
@@ -71,6 +87,11 @@ const Shipping = () => {
           </div>
 
           <form onSubmit={submitHandler} className="space-y-4">
+            {savedAddresses.length > 0 && <label className="block text-sm font-semibold text-gray-700">Địa chỉ đã lưu<select value={selectedAddressId} onChange={(e) => { setSelectedAddressId(e.target.value); const item = savedAddresses.find((entry) => entry._id === e.target.value); if (!item) return; setAddress(item.address); setCity(item.city); setPostalCode(item.postalCode || ''); setCountry(item.country || 'Việt Nam'); setPhone(item.phone); setRecipient(item.recipient); }} className="mt-1 w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm"><option value="">Nhập địa chỉ mới</option>{savedAddresses.map((item) => <option key={item._id} value={item._id}>{item.label} — {item.address}, {item.city}</option>)}</select></label>}
+            <div>
+              <label htmlFor="recipient" className="block text-sm font-semibold text-gray-700 mb-1">Tên người nhận *</label>
+              <input id="recipient" required value={recipient} onChange={(e) => setRecipient(e.target.value)} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-orange outline-none" />
+            </div>
             <div>
               <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-1">
                 Street Address <span className="text-red-500">*</span>
@@ -117,7 +138,6 @@ const Shipping = () => {
                 />
               </div>
             </div>
-
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label htmlFor="country" className="block text-sm font-semibold text-gray-700 mb-1">

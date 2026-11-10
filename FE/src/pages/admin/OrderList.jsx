@@ -6,12 +6,15 @@ const OrderList = () => {
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [drafts, setDrafts] = useState({});
+  const [savingId, setSavingId] = useState(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const { data } = await api.get('/orders');
         setOrders(data);
+        setDrafts(Object.fromEntries(data.map((order) => [order._id, { status: order.status, trackingNumber: order.trackingNumber || '' }])));
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to fetch orders');
       } finally {
@@ -20,6 +23,15 @@ const OrderList = () => {
     };
     fetchOrders();
   }, []);
+
+  const saveDelivery = async (orderId) => {
+    setSavingId(orderId); setError(null);
+    try {
+      const { data } = await api.put(`/orders/${orderId}/status`, drafts[orderId]);
+      setOrders((all) => all.map((order) => order._id === orderId ? { ...order, ...data, user: order.user } : order));
+    } catch (err) { setError(err.response?.data?.message || 'Không cập nhật được đơn hàng.'); }
+    finally { setSavingId(null); }
+  };
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -75,7 +87,7 @@ const OrderList = () => {
                       {new Date(order.createdAt).toLocaleDateString('vi-VN')}
                     </td>
                     <td className="p-4 font-bold text-brand-orange">${order.totalPrice.toFixed(2)}</td>
-                    <td className="p-4">{getStatusBadge(order.status)}</td>
+                    <td className="p-4"><div className="space-y-2">{getStatusBadge(order.status)}<select aria-label={`Trạng thái đơn ${order._id}`} value={drafts[order._id]?.status || order.status} onChange={(e) => setDrafts((all) => ({ ...all, [order._id]: { ...all[order._id], status: e.target.value } }))} className="block w-40 rounded border border-gray-200 px-2 py-1 text-xs"><option>Chờ xác nhận</option><option>Đang đóng gói</option><option>Đang giao</option><option>Hoàn thành</option><option>Đã hủy</option></select>{(drafts[order._id]?.status === 'Đang giao' || order.trackingNumber) && <input aria-label={`Mã vận đơn ${order._id}`} placeholder="Mã vận đơn" value={drafts[order._id]?.trackingNumber || ''} onChange={(e) => setDrafts((all) => ({ ...all, [order._id]: { ...all[order._id], trackingNumber: e.target.value } }))} className="block w-40 rounded border border-gray-200 px-2 py-1 text-xs" />}<button onClick={() => saveDelivery(order._id)} disabled={savingId === order._id} className="text-xs font-semibold text-brand-orange disabled:opacity-50">{savingId === order._id ? 'Đang lưu…' : 'Lưu cập nhật'}</button></div></td>
                     <td className="p-4">
                       {order.isDelivered ? (
                         <span className="text-emerald-700 bg-emerald-50 px-2 py-1 rounded-full text-xs font-medium">

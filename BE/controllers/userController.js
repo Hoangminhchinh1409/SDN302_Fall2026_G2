@@ -146,6 +146,46 @@ const updateUserProfile = async (req, res) => {
   }
 };
 
+const getUserAddresses = async (req, res) => {
+  const user = await User.findById(req.user._id).select('addresses');
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  res.json(user.addresses || []);
+};
+
+const saveUserAddress = async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  const { label, recipient, phone, address, city, postalCode, country, isDefault } = req.body;
+  if (![recipient, phone, address, city].every((value) => typeof value === 'string' && value.trim())) {
+    return res.status(400).json({ message: 'Vui lòng nhập người nhận, số điện thoại, địa chỉ và tỉnh/thành.' });
+  }
+  const data = { label: label?.trim() || 'Nhà riêng', recipient: recipient.trim(), phone: phone.trim(), address: address.trim(), city: city.trim(), postalCode: postalCode?.trim() || '', country: country?.trim() || 'Việt Nam', isDefault: Boolean(isDefault) };
+  if (data.isDefault || user.addresses.length === 0) user.addresses.forEach((item) => { item.isDefault = false; });
+  if (req.params.addressId) {
+    const savedAddress = user.addresses.id(req.params.addressId);
+    if (!savedAddress) return res.status(404).json({ message: 'Không tìm thấy địa chỉ.' });
+    savedAddress.set(data);
+  } else {
+    user.addresses.push(data);
+  }
+  if (data.isDefault || user.addresses.length === 1) user.addresses.forEach((item) => { item.isDefault = item._id.toString() === (req.params.addressId || user.addresses[user.addresses.length - 1]._id).toString(); });
+  if (!user.addresses.some((item) => item.isDefault) && user.addresses.length) user.addresses[0].isDefault = true;
+  await user.save();
+  res.status(req.params.addressId ? 200 : 201).json(user.addresses);
+};
+
+const deleteUserAddress = async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(404).json({ message: 'User not found' });
+  const address = user.addresses.id(req.params.addressId);
+  if (!address) return res.status(404).json({ message: 'Không tìm thấy địa chỉ.' });
+  const wasDefault = address.isDefault;
+  address.deleteOne();
+  if (wasDefault && user.addresses.length) user.addresses[0].isDefault = true;
+  await user.save();
+  res.json(user.addresses);
+};
+
 // @desc    Get all users
 // @route   GET /api/users
 // @access  Private/Admin
@@ -238,6 +278,9 @@ module.exports = {
   logoutUser,
   getUserProfile,
   updateUserProfile,
+  getUserAddresses,
+  saveUserAddress,
+  deleteUserAddress,
   getUsers,
   deleteUser,
   updateUserRole,

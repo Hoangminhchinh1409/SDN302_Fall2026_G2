@@ -2,6 +2,15 @@ const Order = require('../models/Order');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Cart = require('../models/Cart');
+const Notification = require('../models/Notification');
+
+const notifyOrderOwner = async (notification) => {
+  try {
+    await Notification.create(notification);
+  } catch (error) {
+    console.error('Order notification error:', error);
+  }
+};
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -53,6 +62,8 @@ const addOrderItems = async (req, res) => {
       orderItems: formattedOrderItems,
       user: req.user._id,
       shippingAddress: {
+        recipient: shippingAddress?.recipient || '',
+        phone: shippingAddress?.phone || '',
         address: shippingAddress?.address || 'Default Address',
         city: shippingAddress?.city || 'Hanoi',
         postalCode: shippingAddress?.postalCode || '100000',
@@ -66,9 +77,11 @@ const addOrderItems = async (req, res) => {
       couponCode: couponCode || undefined,
       discountAmount: Number(discountAmount) || 0,
       status: 'Chờ xác nhận',
+      statusHistory: [{ status: 'Chờ xác nhận', note: 'Đơn hàng đã được tạo.' }],
     });
 
     const createdOrder = await order.save();
+    await notifyOrderOwner({ user: req.user._id, order: createdOrder._id, title: 'Đã nhận đơn hàng', message: 'Đơn hàng của bạn đã được tiếp nhận.' });
 
     // 3. Deduct stock for each product
     for (const item of formattedOrderItems) {
@@ -164,12 +177,56 @@ const getMyOrders = async (req, res) => {
     if (req.query.status) {
       filter.status = req.query.status;
     }
+    if (req.query.from || req.query.to) {
+      filter.createdAt = {};
+      if (req.query.from) filter.createdAt.$gte = new Date(req.query.from);
+      if (req.query.to) {
+        const end = new Date(req.query.to);
+        end.setHours(23, 59, 59, 999);
+        filter.createdAt.$lte = end;
+      }
+    }
 
     const orders = await Order.find(filter).sort({ createdAt: -1 });
-    res.json(orders);
+    const search = String(req.query.q || '').trim().toLowerCase();
+    const filtered = search ? orders.filter((order) => order._id.toString().toLowerCase().includes(search) || order.orderItems.some((item) => item.name.toLowerCase().includes(search))) : orders;
+    res.json(filtered);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server Error' });
+  }
+};
+
+const reorderOrder = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) return res.status(404).json({ message: 'Không tìm thấy đơn hàng.' });
+    if (order.user.toString() !== req.user._id.toString()) return res.status(403).json({ message: 'Bạn không có quyền mua lại đơn hàng này.' });
+    let cart = await Cart.findOne({ user: req.user._id });
+    if (!cart) cart = await Cart.create({ user: req.user._id, items: [] });
+    const skipped = [];
+    for (const item of order.orderItems) {
+      const product = await Product.findById(item.product);
+      if (!product || product.stock <= 0) {
+        skipped.push(item.name);
+        continue;
+      }
+      const existing = cart.items.find((entry) => entry.product.toString() === product._id.toString() && !entry.variantInfo);
+      const availableQty = Math.max(0, product.stock - (existing?.quantity || 0));
+      const qtyToAdd = Math.min(item.qty, availableQty);
+      if (qtyToAdd <= 0) {
+        skipped.push(item.name);
+        continue;
+      }
+      if (qtyToAdd < item.qty) skipped.push(`${item.name} (thêm được ${qtyToAdd}/${item.qty})`);
+      if (existing) existing.quantity += qtyToAdd;
+      else cart.items.push({ product: product._id, quantity: qtyToAdd, variantInfo: '' });
+    }
+    await cart.save();
+    const populatedCart = await Cart.findById(cart._id).populate('items.product', 'name price image stock lowStockThreshold');
+    res.json({ cart: populatedCart, skipped });
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Không thể mua lại đơn hàng.' });
   }
 };
 
@@ -222,8 +279,10 @@ const cancelOrder = async (req, res) => {
     order.cancelledAt = new Date();
     order.cancelReason = req.body.reason || (isOwner ? 'Khách hàng yêu cầu hủy đơn' : 'Được hủy bởi quản trị viên');
     order.cancelledBy = req.user._id;
+    order.statusHistory.push({ status: 'Đã hủy', note: order.cancelReason });
 
     const updatedOrder = await order.save();
+    await notifyOrderOwner({ user: order.user, order: order._id, title: 'Đơn hàng đã bị hủy', message: order.cancelReason });
 
     // Restore stock for all products in the cancelled order
     for (const item of order.orderItems) {
@@ -291,6 +350,7 @@ const updateOrderStatus = async (req, res) => {
     }
 
     const previousStatus = order.status;
+    const previousTrackingNumber = order.trackingNumber || '';
     const nextStatus = req.body.status || order.status;
 
     // If changing to 'Đã hủy' from non-cancelled status, restore stock
@@ -330,11 +390,14 @@ const updateOrderStatus = async (req, res) => {
       }
     }
 
+    const allowedStatuses = ['Chờ xác nhận', 'Đang đóng gói', 'Đang giao', 'Hoàn thành', 'Đã hủy'];
+    if (!allowedStatuses.includes(nextStatus)) return res.status(400).json({ message: 'Trạng thái đơn hàng không hợp lệ.' });
     order.status = nextStatus;
-
-    if (order.status === 'Đang giao' && !order.isDelivered) {
-      order.isDelivered = true;
-      order.deliveredAt = Date.now();
+    if (req.body.trackingNumber !== undefined) order.trackingNumber = String(req.body.trackingNumber).trim();
+    const trackingChanged = previousTrackingNumber !== order.trackingNumber;
+    if (previousStatus !== nextStatus || trackingChanged) {
+      const notes = { 'Chờ xác nhận': 'Cửa hàng đã tiếp nhận đơn hàng.', 'Đang đóng gói': 'Đơn hàng đang được chuẩn bị.', 'Đang giao': order.trackingNumber ? `Đơn hàng đang được giao. Mã vận đơn: ${order.trackingNumber}` : 'Đơn hàng đang được giao.', 'Hoàn thành': 'Đơn hàng đã được giao thành công.', 'Đã hủy': order.cancelReason || 'Đơn hàng đã bị hủy.' };
+      order.statusHistory.push({ status: nextStatus, note: trackingChanged ? `Mã vận đơn: ${order.trackingNumber || 'đã được xóa'}` : notes[nextStatus] });
     }
 
     if (order.status === 'Hoàn thành' && !order.isDelivered) {
@@ -343,6 +406,7 @@ const updateOrderStatus = async (req, res) => {
     }
 
     const updatedOrder = await order.save();
+    if (previousStatus !== nextStatus || trackingChanged) await notifyOrderOwner({ user: order.user, order: order._id, title: trackingChanged && previousStatus === nextStatus ? 'Mã vận đơn đã cập nhật' : `Đơn hàng ${nextStatus.toLowerCase()}`, message: order.statusHistory[order.statusHistory.length - 1].note });
     res.json(updatedOrder);
   } catch (error) {
     console.error('Update order status error:', error);
@@ -355,6 +419,7 @@ module.exports = {
   getOrderById,
   getMyOrders,
   getOrders,
+  reorderOrder,
   updateOrderStatus,
   cancelOrder,
 };

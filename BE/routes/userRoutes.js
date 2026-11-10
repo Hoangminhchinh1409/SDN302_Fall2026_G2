@@ -6,6 +6,9 @@ const {
   logoutUser,
   getUserProfile,
   updateUserProfile,
+  getUserAddresses,
+  saveUserAddress,
+  deleteUserAddress,
   getUsers,
   deleteUser,
   updateUserRole,
@@ -22,6 +25,9 @@ router
   .route('/profile')
   .get(protect, getUserProfile)
   .put(protect, updateUserProfile);
+
+router.route('/addresses').get(protect, getUserAddresses).post(protect, saveUserAddress);
+router.route('/addresses/:addressId').put(protect, saveUserAddress).delete(protect, deleteUserAddress);
 
 router.route('/:id').delete(protect, admin, deleteUser);
 router.route('/:id/role').put(protect, admin, updateUserRole);

@@ -166,7 +166,8 @@ const OrderDetails = () => {
                 <i className="fas fa-shipping-fast text-brand-orange"></i> Thông tin giao hàng
               </h2>
               <div className="text-gray-700 text-sm space-y-1.5 mb-4">
-                <p><strong>Người nhận:</strong> {order.user?.name || user?.name || 'Khách hàng'}</p>
+                <p><strong>Người nhận:</strong> {order.shippingAddress?.recipient || order.user?.name || user?.name || 'Khách hàng'}</p>
+                {order.shippingAddress?.phone && <p><strong>Số điện thoại:</strong> {order.shippingAddress.phone}</p>}
                 <p><strong>Email:</strong> {order.user?.email || user?.email || ''}</p>
                 <p>
                   <strong>Địa chỉ:</strong> {order.shippingAddress?.address}, {order.shippingAddress?.city}, {order.shippingAddress?.country || 'Việt Nam'}
@@ -182,6 +183,14 @@ const OrderDetails = () => {
                   <i className="fas fa-clock"></i> Chưa giao hàng
                 </div>
               )}
+              {order.trackingNumber && <p className="mt-3 rounded-lg bg-blue-50 p-3 text-sm text-blue-800"><strong>Mã vận đơn:</strong> {order.trackingNumber}</p>}
+            </div>
+
+            <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+              <h2 className="mb-4 text-lg font-bold text-brand-dark">Cập nhật đơn hàng</h2>
+              <ol className="space-y-4 border-l-2 border-gray-100 pl-5">
+                {(order.statusHistory?.length ? order.statusHistory : [{ status: order.status, note: 'Trạng thái hiện tại', createdAt: order.updatedAt || order.createdAt }]).map((event, index) => <li key={`${event.status}-${event.createdAt}-${index}`} className="relative"><span className="absolute -left-[27px] top-1 h-3 w-3 rounded-full bg-brand-orange ring-4 ring-white" /><p className="font-semibold text-brand-dark">{event.status}</p><p className="text-sm text-gray-600">{event.note}</p><time className="text-xs text-gray-400">{new Date(event.createdAt).toLocaleString('vi-VN')}</time></li>)}
+              </ol>
             </div>
 
             {/* Payment Method Card */}

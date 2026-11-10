@@ -10,6 +10,8 @@ import Services from './pages/Services';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Profile from './pages/auth/Profile';
+import Addresses from './pages/auth/Addresses';
+import Notifications from './pages/Notifications';
 import Cart from './pages/cart/Cart';
 import Wishlist from './pages/Wishlist';
 import BookAppointment from './pages/BookAppointment';
@@ -54,6 +56,8 @@ function App() {
           {/* Protected Routes for Customer/Guest */}
           <Route path="" element={<PrivateRoute />}>
             <Route path="profile" element={<Profile />} />
+            <Route path="addresses" element={<Addresses />} />
+            <Route path="notifications" element={<Notifications />} />
             <Route path="wishlist" element={<Wishlist />} />
             <Route path="pets" element={<PetProfiles />} />
             <Route path="book-appointment" element={<BookAppointment />} />

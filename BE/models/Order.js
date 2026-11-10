@@ -20,6 +20,8 @@ const orderSchema = new mongoose.Schema({
     }
   ],
   shippingAddress: {
+    recipient: { type: String, default: '' },
+    phone: { type: String, default: '' },
     address: { type: String, required: true },
     city: { type: String, default: 'Hanoi' },
     postalCode: { type: String, default: '100000' },
@@ -63,6 +65,11 @@ const orderSchema = new mongoose.Schema({
     enum: ['Chờ xác nhận', 'Đang đóng gói', 'Đang giao', 'Hoàn thành', 'Đã hủy'],
     default: 'Chờ xác nhận',
   },
+  statusHistory: [{
+    status: { type: String, required: true },
+    note: { type: String, default: '' },
+    createdAt: { type: Date, default: Date.now },
+  }],
   cancelledAt: {
     type: Date,
   },
