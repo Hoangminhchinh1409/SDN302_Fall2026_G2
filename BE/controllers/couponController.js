@@ -170,6 +170,42 @@ const createCoupon = async (req, res) => {
   }
 };
 
+// @desc    Update coupon (Admin)
+// @route   PUT /api/coupons/:id
+// @access  Private/Admin
+const updateCoupon = async (req, res) => {
+  try {
+    const coupon = await Coupon.findById(req.params.id);
+    if (!coupon) {
+      return res.status(404).json({ message: 'Không tìm thấy mã giảm giá' });
+    }
+
+    const { code, discountPercentage, expiryDate, minOrderValue, maxDiscountAmount, description, usageLimit, isActive } = req.body;
+
+    if (code !== undefined && code.trim()) {
+      const cleanCode = code.trim().toUpperCase();
+      const duplicate = await Coupon.findOne({ code: cleanCode, _id: { $ne: coupon._id } });
+      if (duplicate) {
+        return res.status(400).json({ message: 'Mã giảm giá này đã tồn tại' });
+      }
+      coupon.code = cleanCode;
+    }
+    if (discountPercentage !== undefined) coupon.discountPercentage = Number(discountPercentage);
+    if (expiryDate !== undefined) coupon.expiryDate = expiryDate;
+    if (minOrderValue !== undefined) coupon.minOrderValue = Number(minOrderValue) || 0;
+    if (maxDiscountAmount !== undefined) coupon.maxDiscountAmount = Number(maxDiscountAmount) || 0;
+    if (description !== undefined) coupon.description = description;
+    if (usageLimit !== undefined) coupon.usageLimit = usageLimit ? Number(usageLimit) : null;
+    if (isActive !== undefined) coupon.isActive = Boolean(isActive);
+
+    await coupon.save();
+    res.json(coupon);
+  } catch (error) {
+    console.error('updateCoupon error:', error);
+    res.status(500).json({ message: error.message || 'Server error' });
+  }
+};
+
 // @desc    Delete coupon (Admin)
 // @route   DELETE /api/coupons/:id
 // @access  Private/Admin
@@ -194,5 +230,6 @@ module.exports = {
   checkCoupon,
   applyCoupon,
   createCoupon,
+  updateCoupon,
   deleteCoupon,
 };

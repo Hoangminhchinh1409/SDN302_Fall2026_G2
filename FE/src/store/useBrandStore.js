@@ -14,6 +14,38 @@ const useBrandStore = create((set) => ({
     } catch (error) {
       set({ error: error.response?.data?.message || error.message, loading: false });
     }
+  },
+
+  createBrand: async (brandData) => {
+    try {
+      const { data } = await api.post('/brands', brandData);
+      set((state) => ({ brands: [...state.brands, data] }));
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  },
+
+  updateBrand: async (id, brandData) => {
+    try {
+      const { data } = await api.put(`/brands/${id}`, brandData);
+      set((state) => ({
+        brands: state.brands.map((b) => (b._id === id ? data : b))
+      }));
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
+  },
+
+  deleteBrand: async (id) => {
+    try {
+      await api.delete(`/brands/${id}`);
+      set((state) => ({ brands: state.brands.filter((b) => b._id !== id) }));
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message || error.message };
+    }
   }
 }));
 
