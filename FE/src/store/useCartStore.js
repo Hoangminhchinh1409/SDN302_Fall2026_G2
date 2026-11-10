@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '../api/axios';
 import useAuthStore from './useAuthStore';
+import safePersistStorage from './safePersistStorage';
 
 const useCartStore = create(
   persist(
@@ -249,9 +250,7 @@ const useCartStore = create(
         return Number(Math.max(0, items + shipping + tax - discount).toFixed(2));
       },
     }),
-    {
-      name: 'cart-storage',
-    }
+    { name: 'cart-storage', storage: safePersistStorage }
   )
 );
 

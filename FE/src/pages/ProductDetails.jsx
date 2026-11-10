@@ -54,18 +54,18 @@ const ProductDetails = () => {
 
   const fetchReviewsData = useCallback(async () => {
     setReviewsLoading(true);
+    setReviews([]);
     try {
       const { data } = await api.get(`/reviews/product/${id}`);
       setReviews(data || []);
     } catch (err) {
       // Fallback to product.reviews
-      if (product?.reviews) {
-        setReviews(product.reviews);
-      }
+      const embeddedReviews = useProductStore.getState().product?.reviews;
+      setReviews(Array.isArray(embeddedReviews) ? embeddedReviews : []);
     } finally {
       setReviewsLoading(false);
     }
-  }, [id, product?.reviews]);
+  }, [id]);
 
   const checkUserEligibility = useCallback(async () => {
     if (!user) return;

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '../api/axios';
+import safePersistStorage from './safePersistStorage';
 
 const useAuthStore = create(
   persist(
@@ -8,6 +9,32 @@ const useAuthStore = create(
       user: null,
       isLoading: false,
       error: null,
+
+      fetchProfile: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const { data } = await api.get('/users/profile');
+          set({ user: data, isLoading: false });
+          return data;
+        } catch (error) {
+          const message = error.response?.data?.message || 'Không thể tải hồ sơ người dùng';
+          set({ error: message, isLoading: false });
+          return null;
+        }
+      },
+
+      updateProfile: async (profileData) => {
+        set({ isLoading: true, error: null });
+        try {
+          const { data } = await api.put('/users/profile', profileData);
+          set({ user: data, isLoading: false });
+          return { success: true, user: data };
+        } catch (error) {
+          const message = error.response?.data?.message || 'Không thể cập nhật hồ sơ người dùng';
+          set({ error: message, isLoading: false });
+          return { success: false, message };
+        }
+      },
 
       login: async (email, password) => {
         set({ isLoading: true, error: null });
@@ -63,9 +90,7 @@ const useAuthStore = create(
 
       clearError: () => set({ error: null })
     }),
-    {
-      name: 'auth-storage',
-    }
+    { name: 'auth-storage', storage: safePersistStorage }
   )
 );
 
