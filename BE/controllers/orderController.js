@@ -83,11 +83,26 @@ const addOrderItems = async (req, res) => {
     const createdOrder = await order.save();
     await notifyOrderOwner({ user: req.user._id, order: createdOrder._id, title: 'Đã nhận đơn hàng', message: 'Đơn hàng của bạn đã được tiếp nhận.' });
 
-    // 3. Deduct stock for each product
+    // 3. Deduct stock atomically with rollback on shortage
+    const deductedItems = [];
     for (const item of formattedOrderItems) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { stock: -item.qty }
-      });
+      const updatedProduct = await Product.findOneAndUpdate(
+        { _id: item.product, stock: { $gte: item.qty } },
+        { $inc: { stock: -item.qty } },
+        { new: true }
+      );
+
+      if (!updatedProduct) {
+        // Rollback already deducted items
+        for (const rolledBack of deductedItems) {
+          await Product.findByIdAndUpdate(rolledBack.product, { $inc: { stock: rolledBack.qty } });
+        }
+        await Order.findByIdAndDelete(createdOrder._id);
+        return res.status(400).json({
+          message: `Sản phẩm "${item.name}" vừa hết hàng hoặc không đủ tồn kho.`
+        });
+      }
+      deductedItems.push(item);
     }
 
     // 4. Clear user's cart in database
@@ -414,6 +429,124 @@ const updateOrderStatus = async (req, res) => {
   }
 };
 
+// @desc    Get SEPay payment info and VietQR
+// @route   GET /api/orders/:id/sepay-info
+// @access  Private
+const getSepayInfo = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+    if (!order) {
+      return res.status(404).json({ message: 'Không tìm thấy đơn hàng' });
+    }
+
+    const bankAcc = process.env.SEPAY_BANK_ACC || '0362959028';
+    const bankName = process.env.SEPAY_BANK_NAME || 'MBBank';
+    const bankOwner = process.env.SEPAY_BANK_OWNER || 'PET SHOP STORE';
+    const exchangeRate = Number(process.env.VND_EXCHANGE_RATE) || 25000;
+    const amountVnd = Math.round(order.totalPrice * exchangeRate);
+    const content = `DH${order._id.toString()}`;
+    const qrUrl = `https://vietqr.app/img?acc=${encodeURIComponent(bankAcc)}&bank=${encodeURIComponent(bankName)}&amount=${amountVnd}&des=${encodeURIComponent(content)}`;
+
+    res.json({
+      bankAcc,
+      bankName,
+      bankOwner,
+      amountVnd,
+      content,
+      qrUrl,
+      isPaid: order.isPaid,
+      paidAt: order.paidAt,
+    });
+  } catch (error) {
+    console.error('getSepayInfo error:', error);
+    res.status(500).json({ message: error.message || 'Lỗi lấy thông tin thanh toán' });
+  }
+};
+
+// @desc    SEPay Webhook handler
+// @route   POST /api/orders/sepay-webhook
+// @access  Public
+const sepayWebhook = async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization || '';
+    const sepayKey = process.env.SEPAY_API_KEY;
+
+    if (sepayKey) {
+      const token = authHeader.replace(/^(Apikey|Bearer)\s+/i, '').trim();
+      if (token !== sepayKey.trim()) {
+        return res.status(401).json({ success: false, message: 'Invalid SEPay API Key' });
+      }
+    }
+
+    const {
+      gateway,
+      transactionDate,
+      accountNumber,
+      content,
+      transferType,
+      transferAmount,
+      referenceCode,
+      id: transactionId,
+    } = req.body;
+
+    if (transferType !== 'in') {
+      return res.json({ success: true, message: 'Ignored non-incoming transaction' });
+    }
+
+    if (!content) {
+      return res.status(400).json({ success: false, message: 'Thiếu nội dung chuyển khoản' });
+    }
+
+    let order = null;
+    const objectIdMatch = content.match(/[0-9a-fA-F]{24}/);
+    if (objectIdMatch) {
+      order = await Order.findById(objectIdMatch[0]);
+    }
+
+    if (!order) {
+      return res.json({ success: false, message: 'Không tìm thấy đơn hàng tương ứng' });
+    }
+
+    if (order.isPaid) {
+      return res.json({ success: true, message: 'Đơn hàng đã được thanh toán trước đó' });
+    }
+
+    order.isPaid = true;
+    order.paidAt = transactionDate ? new Date(transactionDate) : new Date();
+    order.paymentResult = {
+      id: transactionId ? String(transactionId) : referenceCode,
+      status: 'COMPLETED',
+      update_time: transactionDate || new Date().toISOString(),
+      account_number: accountNumber || '',
+      reference_code: referenceCode || '',
+    };
+
+    if (order.status === 'Chờ xác nhận') {
+      order.status = 'Đang đóng gói';
+    }
+
+    order.statusHistory.push({
+      status: order.status,
+      note: `Thanh toán thành công qua SEPay (${gateway || 'Ngân hàng'}). Số tiền: ${transferAmount ? Number(transferAmount).toLocaleString('vi-VN') + ' đ' : ''}`,
+      createdAt: new Date(),
+    });
+
+    await order.save();
+
+    await notifyOrderOwner({
+      user: order.user,
+      order: order._id,
+      title: 'Thanh toán thành công',
+      message: `Đơn hàng #${order._id.toString().slice(-6)} đã được thanh toán thành công qua SEPay.`,
+    });
+
+    return res.json({ success: true, message: 'Xác nhận thanh toán thành công' });
+  } catch (error) {
+    console.error('sepayWebhook error:', error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   addOrderItems,
   getOrderById,
@@ -422,4 +555,6 @@ module.exports = {
   reorderOrder,
   updateOrderStatus,
   cancelOrder,
+  getSepayInfo,
+  sepayWebhook,
 };

@@ -119,10 +119,10 @@ const Payment = () => {
                 <i className="fab fa-paypal text-xl text-blue-600"></i>
               </label>
 
-              {/* Option 3: Bank Transfer */}
+              {/* Option 3: SEPay (VietQR) */}
               <label
                 className={`flex items-center justify-between p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                  method === 'Bank Transfer'
+                  method === 'SEPay' || method === 'Bank Transfer'
                     ? 'border-brand-orange bg-orange-50/30'
                     : 'border-gray-200 hover:border-gray-300 bg-white'
                 }`}
@@ -131,17 +131,17 @@ const Payment = () => {
                   <input
                     type="radio"
                     name="paymentMethod"
-                    value="Bank Transfer"
-                    checked={method === 'Bank Transfer'}
+                    value="SEPay"
+                    checked={method === 'SEPay' || method === 'Bank Transfer'}
                     onChange={(e) => setMethod(e.target.value)}
                     className="w-4 h-4 text-brand-orange focus:ring-brand-orange"
                   />
                   <div>
-                    <span className="font-bold text-gray-800 text-sm block">Bank Transfer (VietQR)</span>
-                    <span className="text-xs text-gray-500">Instant scan QR code via mobile banking apps</span>
+                    <span className="font-bold text-gray-800 text-sm block">SEPay - Quét mã VietQR ngân hàng</span>
+                    <span className="text-xs text-gray-500">Tự động xác nhận giao dịch qua App Ngân hàng (MB, VCB, Techcombank,...)</span>
                   </div>
                 </div>
-                <i className="fas fa-qrcode text-xl text-purple-600"></i>
+                <i className="fas fa-qrcode text-xl text-brand-orange"></i>
               </label>
             </div>
 

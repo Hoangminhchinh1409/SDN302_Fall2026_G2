@@ -14,10 +14,40 @@ const OrderDetails = () => {
   const [customReason, setCustomReason] = useState('');
   const [cancelLoading, setCancelLoading] = useState(false);
   const [actionMessage, setActionMessage] = useState(null);
+  const [sepayInfo, setSepayInfo] = useState(null);
+  const [copiedField, setCopiedField] = useState(null);
 
   useEffect(() => {
     fetchOrderDetails(id);
   }, [fetchOrderDetails, id]);
+
+  useEffect(() => {
+    if (order && (order.paymentMethod === 'SEPay' || order.paymentMethod === 'Bank Transfer') && !order.isPaid && order.status !== 'Đã hủy') {
+      api.get(`/orders/${id}/sepay-info`)
+        .then(({ data }) => setSepayInfo(data))
+        .catch(console.error);
+
+      const interval = setInterval(async () => {
+        try {
+          const { data } = await api.get(`/orders/${id}`);
+          if (data && data.isPaid) {
+            clearInterval(interval);
+            fetchOrderDetails(id);
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }, 5000);
+
+      return () => clearInterval(interval);
+    }
+  }, [order?.isPaid, order?.paymentMethod, order?.status, id, fetchOrderDetails]);
+
+  const copyToClipboard = (text, field) => {
+    navigator.clipboard.writeText(text);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
 
   const handleCancelOrder = async () => {
     const finalReason = selectedReason === 'Khác' ? customReason.trim() : selectedReason;
@@ -203,7 +233,75 @@ const OrderDetails = () => {
               </p>
               {order.isPaid ? (
                 <div className="bg-emerald-50 text-emerald-700 border border-emerald-200 p-3 rounded-lg text-sm font-medium flex items-center gap-2">
-                  <i className="fas fa-check-circle"></i> Đã thanh toán ngày {new Date(order.paidAt).toLocaleDateString('vi-VN')}
+                  <i className="fas fa-check-circle"></i> Đã thanh toán ngày {new Date(order.paidAt).toLocaleDateString('vi-VN')} {order.paymentResult?.reference_code ? `• Mã GD: ${order.paymentResult.reference_code}` : ''}
+                </div>
+              ) : order.paymentMethod === 'SEPay' || order.paymentMethod === 'Bank Transfer' ? (
+                <div className="space-y-4">
+                  <div className="bg-amber-50 text-amber-800 border border-amber-200 p-3 rounded-lg text-sm font-medium flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-ping"></span>
+                    Đang chờ thanh toán qua VietQR (Hệ thống tự động kích hoạt)
+                  </div>
+
+                  {sepayInfo && (
+                    <div className="border border-orange-200 bg-orange-50/40 rounded-xl p-5 flex flex-col md:flex-row items-center gap-6">
+                      <div className="text-center shrink-0">
+                        <img
+                          src={sepayInfo.qrUrl}
+                          alt="Mã VietQR thanh toán SEPay"
+                          className="w-48 h-48 mx-auto rounded-lg border-2 border-white shadow-md bg-white p-1"
+                        />
+                        <span className="text-[11px] text-gray-500 mt-1 block">Quét bằng App Ngân hàng bất kỳ</span>
+                      </div>
+
+                      <div className="flex-1 w-full space-y-2.5 text-xs text-gray-700">
+                        <div className="flex justify-between items-center py-1 border-b border-orange-100">
+                          <span className="text-gray-500">Ngân hàng:</span>
+                          <span className="font-bold text-brand-dark">{sepayInfo.bankName}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1 border-b border-orange-100">
+                          <span className="text-gray-500">Chủ tài khoản:</span>
+                          <span className="font-bold text-brand-dark">{sepayInfo.bankOwner}</span>
+                        </div>
+                        <div className="flex justify-between items-center py-1 border-b border-orange-100">
+                          <span className="text-gray-500">Số tài khoản:</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-brand-orange text-sm">{sepayInfo.bankAcc}</span>
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(sepayInfo.bankAcc, 'acc')}
+                              className="px-2 py-0.5 rounded bg-white border text-gray-600 hover:text-brand-orange transition"
+                            >
+                              {copiedField === 'acc' ? 'Đã chép' : 'Chép'}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex justify-between items-center py-1 border-b border-orange-100">
+                          <span className="text-gray-500">Số tiền:</span>
+                          <span className="font-bold text-emerald-700 text-sm">
+                            {Number(sepayInfo.amountVnd).toLocaleString('vi-VN')} đ
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center py-1">
+                          <span className="text-gray-500">Nội dung chuyển khoản:</span>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded border border-red-200">
+                              {sepayInfo.content}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(sepayInfo.content, 'content')}
+                              className="px-2 py-0.5 rounded bg-white border text-gray-600 hover:text-brand-orange transition"
+                            >
+                              {copiedField === 'content' ? 'Đã chép' : 'Chép'}
+                            </button>
+                          </div>
+                        </div>
+                        <p className="text-[11px] text-gray-400 italic pt-1">
+                          * Lưu ý: Giữ nguyên nội dung chuyển khoản để hệ thống tự động xác nhận đơn hàng trong vài giây.
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="bg-gray-100 text-gray-700 p-3 rounded-lg text-sm font-medium flex items-center gap-2">

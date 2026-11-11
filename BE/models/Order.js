@@ -88,6 +88,13 @@ const orderSchema = new mongoose.Schema({
   paidAt: {
     type: Date,
   },
+  paymentResult: {
+    id: { type: String },
+    status: { type: String },
+    update_time: { type: String },
+    account_number: { type: String },
+    reference_code: { type: String },
+  },
   isDelivered: {
     type: Boolean,
     required: true,
