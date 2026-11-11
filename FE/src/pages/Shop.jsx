@@ -264,41 +264,38 @@ const Shop = () => {
             ) : error ? (
               <div className="text-center py-10 text-red-500">{error}</div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-10">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {/* Product Items */}
                 {products.map((prod) => (
-                  <div key={prod._id} className="group">
-                    <div className="bg-brand-gray rounded-xl h-56 mb-4 flex items-center justify-center relative overflow-hidden transition-transform group-hover:scale-[1.02]">
-                      {prod.image && prod.image !== '/images/sample.jpg' ? (
-                        <img src={prod.image} alt={prod.name} className="w-full h-full object-cover mask mask-squircle" />
-                      ) : (
-                        <div className="w-3/4 h-3/4 bg-gray-300 mask mask-squircle"></div>
-                      )}
-                      <div className="absolute bottom-4 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
-                        <button 
-                          aria-label={`Add ${prod.name} to cart`}
-                          onClick={() => addToCart(prod, 1)}
-                          className="bg-brand-orange text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-orange-600 shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2"
-                        >
-                          <i className="fas fa-cart-plus" aria-hidden="true"></i>
-                        </button>
-                        <Link 
-                          to={`/product/${prod._id}`}
-                          aria-label={`View details for ${prod.name}`}
-                          className="bg-white text-brand-dark w-10 h-10 rounded-full flex items-center justify-center hover:bg-gray-100 shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange focus-visible:ring-offset-2"
-                        >
-                          <i className="fas fa-eye" aria-hidden="true"></i>
-                        </Link>
+                  <div key={prod._id} className="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col justify-between hover:border-gray-300 transition shadow-2xs">
+                    <div>
+                      <div className="w-full aspect-square bg-gray-50 rounded-xl mb-3 flex items-center justify-center relative overflow-hidden">
+                        {prod.image && prod.image !== '/images/sample.jpg' ? (
+                          <img src={prod.image} alt={prod.name} className="w-full h-full object-contain p-2" />
+                        ) : (
+                          <i className="fas fa-box text-3xl text-gray-300"></i>
+                        )}
                       </div>
+                      <Link to={`/product/${prod._id}`}>
+                        <h3 className="font-extrabold text-base text-brand-dark hover:text-brand-orange transition line-clamp-2 mb-1 cursor-pointer">
+                          {prod.name}
+                        </h3>
+                      </Link>
+                      <p className="text-xs text-gray-500 mb-3 font-medium">
+                        {typeof prod.brand === 'object' ? prod.brand?.name : (prod.brand || 'Pet Shop')}
+                      </p>
                     </div>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <Link to={`/product/${prod._id}`}>
-                          <h3 className="font-bold text-brand-dark text-sm mb-1 group-hover:text-brand-orange transition-colors cursor-pointer">{prod.name}</h3>
-                        </Link>
-                        <p className="text-brand-text text-sm font-medium">${prod.price.toFixed(2)}</p>
-                      </div>
-                      <button className="text-brand-orange opacity-0 group-hover:opacity-100 transition-opacity"><i className="far fa-heart"></i></button>
+
+                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between">
+                      <span className="text-lg font-black text-brand-dark">${prod.price.toFixed(2)}</span>
+                      <button
+                        type="button"
+                        aria-label={`Add ${prod.name} to cart`}
+                        onClick={() => addToCart(prod, 1)}
+                        className="px-3.5 py-1.5 bg-gray-100 hover:bg-brand-orange hover:text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <i className="fas fa-plus text-[10px]"></i> Thêm
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -321,14 +318,37 @@ const Shop = () => {
               ))}
             </div>
 
-            {/* Bottom Banners */}
+            {/* Bottom Service Highlights */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16">
-               <div className="h-48 rounded-xl bg-linear-to-r from-cyan-200 to-blue-300 relative overflow-hidden">
-                   <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px]"></div>
-               </div>
-               <div className="h-48 rounded-xl bg-linear-to-r from-purple-200 to-pink-300 relative overflow-hidden">
-                   <div className="absolute inset-0 bg-white/20 backdrop-blur-[2px]"></div>
-               </div>
+              <div className="rounded-2xl bg-orange-50/60 border border-orange-200/80 p-6 flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-brand-orange block mb-1">Dịch vụ tại tiệm</span>
+                  <h3 className="text-xl font-extrabold text-brand-dark mb-2">Spa & Grooming Thú Cưng</h3>
+                  <p className="text-xs text-gray-600 leading-relaxed max-w-sm">
+                    Tắm vệ sinh, cắt tỉa lông tạo kiểu chuyên nghiệp với giới hạn 3 thú cưng/ca để đảm bảo chăm sóc chu đáo nhất.
+                  </p>
+                </div>
+                <div className="pt-4">
+                  <Link to="/services" className="inline-block bg-brand-dark hover:bg-black text-white text-xs font-bold px-4 py-2 rounded-lg transition">
+                    Đặt lịch ngay →
+                  </Link>
+                </div>
+              </div>
+
+              <div className="rounded-2xl bg-amber-50/50 border border-amber-200/80 p-6 flex flex-col justify-between">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-amber-700 block mb-1">Y tế dự phòng</span>
+                  <h3 className="text-xl font-extrabold text-brand-dark mb-2">Sổ Tiêm Chủng Online</h3>
+                  <p className="text-xs text-gray-600 leading-relaxed max-w-sm">
+                    Lưu trữ lịch sử tiêm phòng, tự động nhắc hẹn mũi tiêm nhắc lại cho từng thú cưng của bạn.
+                  </p>
+                </div>
+                <div className="pt-4">
+                  <Link to="/pets" className="inline-block bg-brand-orange hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-lg transition">
+                    Quản lý thú cưng →
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>

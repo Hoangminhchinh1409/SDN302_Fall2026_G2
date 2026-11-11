@@ -1,120 +1,164 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import useLanguageStore from '../store/useLanguageStore';
 
 const About = () => {
-  return (
-    <>
-      {/* Hero Section */}
-      <section className="relative bg-white pt-12 pb-16 px-4 md:px-12 lg:px-24 flex items-center justify-between overflow-hidden border-b border-gray-100">
-        <div className="relative z-10 max-w-lg">
-          <span className="text-brand-orange font-bold text-sm tracking-widest uppercase mb-2 block">Pet Shop</span>
-          <h1 className="text-5xl font-extrabold text-brand-dark mb-4 leading-tight">If animals could talk,<br />they'd talk about us!</h1>
-          <p className="text-brand-text mb-8">We are passionate about pets. Our mission is to provide top-quality supplies and accessories to help you care for your beloved animal companions.</p>
-          <Link to="/shop" className="bg-brand-dark text-white px-8 py-3 rounded hover:bg-brand-orange transition-colors font-semibold inline-block">Shop Now</Link>
-        </div>
-        
-        {/* Hero Graphics */}
-        <div className="relative z-10 hidden md:block w-96 h-96">
-          <div className="absolute inset-0 bg-brand-orange blob-shape opacity-90 transform translate-x-4"></div>
-          <div className="absolute inset-4 bg-gray-200 blob-shape z-10 flex items-center justify-center overflow-hidden">
-            <i className="fas fa-paw text-8xl text-gray-400"></i>
-          </div>
-          <i className="fas fa-dove absolute -top-8 left-10 text-4xl text-gray-300"></i>
-        </div>
+  const { language } = useLanguageStore();
 
-        {/* Decorative elements */}
-        <div className="absolute top-1/4 -left-10 w-24 h-24 bg-brand-orange rounded-full opacity-80 blob-shape"></div>
-        <div className="absolute bottom-10 left-1/3 w-16 h-16 bg-brand-orange rounded-full opacity-80 blob-shape"></div>
+  const isVi = language === 'vi';
+
+  const values = [
+    {
+      title: isVi ? 'Dinh dưỡng được kiểm duyệt' : 'Curated Nutrition',
+      desc: isVi
+        ? 'Chỉ nhập khẩu và phân phối các dòng hạt, pate và thức ăn đạt tiêu chuẩn thú y an toàn.'
+        : 'Only stocking verified veterinary-grade food, treats, and balanced nutrition.',
+      icon: 'fa-heartbeat',
+    },
+    {
+      title: isVi ? 'Giới hạn số lượng phục vụ' : 'Capped Slot Booking',
+      desc: isVi
+        ? 'Mỗi ca spa chỉ nhận tối đa 3 bạn thú cưng để các chuyên viên dành trọn sự nâng niu và chú ý.'
+        : 'Maximum 3 pets per service slot to ensure individual, unhurried care.',
+      icon: 'fa-shield-dog',
+    },
+    {
+      title: isVi ? 'Hồ sơ y tế minh bạch' : 'Transparent Care Passport',
+      desc: isVi
+        ? 'Lưu trữ lịch sử tiêm chủng online, cảnh báo lịch tiêm nhắc lại tự động cho từng bạn nhỏ.'
+        : 'Digital pet health passport with automatic reminders for vaccine boosters.',
+      icon: 'fa-notes-medical',
+    },
+  ];
+
+  const team = [
+    {
+      name: 'Dr. Minh Trang',
+      role: isVi ? 'Bác sĩ thú y trưởng' : 'Head Veterinarian',
+      exp: isVi ? '8 năm kinh nghiệm y học thú cưng' : '8+ yrs veterinary medicine',
+      photo: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      name: 'Thanh Phong',
+      role: isVi ? 'Chuyên gia tạo kiểu & Groomer' : 'Lead Grooming Stylist',
+      exp: isVi ? 'Chứng chỉ Grooming quốc tế Level B' : 'Certified Master Groomer',
+      photo: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+    },
+    {
+      name: 'Bích Ngọc',
+      role: isVi ? 'Tư vấn dinh dưỡng thú cưng' : 'Pet Nutrition Consultant',
+      exp: isVi ? 'Chăm sóc hơn 3,000 ca thể trạng' : 'Specialist in sensitive digestion',
+      photo: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
+    },
+  ];
+
+  return (
+    <div className="bg-white text-brand-dark min-h-screen">
+      {/* Hero Section: Clean, typography-first with authentic photography */}
+      <section className="px-4 md:px-12 lg:px-24 py-16 md:py-24 border-b border-gray-100 bg-[#fbf9f6]">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-12 items-center">
+          <div className="md:col-span-7">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-[1.12] mb-6">
+              {isVi ? 'Tận tâm vì sức khỏe & niềm vui của thú cưng.' : 'Dedicated to every companion’s joy and health.'}
+            </h1>
+            <p className="text-lg text-gray-700 max-w-xl mb-8 leading-relaxed">
+              {isVi
+                ? 'Thành lập từ tình yêu thương động vật, Pet Shop hướng đến mô hình chăm sóc toàn diện: dinh dưỡng chuẩn khoa học, dịch vụ spa chu đáo và quản lý sức khỏe thông minh.'
+                : 'Founded on genuine love for animals, Pet Shop unites scientific nutrition, boutique grooming and digital health tracking for modern pet parents.'}
+            </p>
+            <div className="flex flex-wrap items-center gap-4">
+              <Link
+                to="/shop"
+                className="bg-brand-dark hover:bg-black text-white px-7 py-3.5 rounded-xl font-bold text-sm transition"
+              >
+                {isVi ? 'Khám phá sản phẩm' : 'Explore Shop'}
+              </Link>
+              <Link
+                to="/services"
+                className="bg-white hover:bg-gray-50 text-brand-dark border-2 border-gray-200 px-7 py-3.5 rounded-xl font-bold text-sm transition"
+              >
+                {isVi ? 'Dịch vụ chăm sóc' : 'Our Services'}
+              </Link>
+            </div>
+          </div>
+
+          <div className="md:col-span-5 flex justify-center">
+            <div className="w-full max-w-md aspect-4/3 rounded-3xl overflow-hidden shadow-md border-4 border-white bg-orange-100">
+              <img
+                src="https://images.unsplash.com/photo-1548767797-d8c844163c4c?auto=format&fit=crop&w=800&q=80"
+                alt="Chăm sóc thú cưng tại Pet Shop"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          </div>
+        </div>
       </section>
 
-      {/* About Content */}
-      <main className="py-16 px-4 md:px-12 lg:px-24 bg-white">
-        
-        {/* Stats Section */}
-        <section className="mb-24 flex flex-col lg:flex-row gap-12">
-          <div className="lg:w-1/2">
-            <h2 className="text-3xl font-bold text-brand-dark mb-6">About our store</h2>
-            <p className="text-brand-text text-sm leading-relaxed mb-4">
-              Founded by a group of passionate animal lovers, our store has grown into a trusted community hub for pet owners. We carefully source every product on our shelves, ensuring that everything from our nutrient-rich foods to our durable toys meets the highest standards of quality and safety.
+      {/* Philosophy & Values */}
+      <section className="px-4 md:px-12 lg:px-24 py-20 border-b border-gray-100">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-2xl mb-14">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">
+              {isVi ? 'Tiêu chuẩn chất lượng tại Pet Shop' : 'Our Commitments'}
+            </h2>
+            <p className="text-base text-gray-600">
+              {isVi
+                ? 'Chúng tôi không chạy theo số lượng mà ưu tiên sự an toàn, minh bạch và thoải mái tối đa cho thú cưng.'
+                : 'Prioritizing safety, transparency and low stress over fast throughput.'}
             </p>
-            <div className="flex gap-12 mt-8">
-              <div>
-                <span className="block text-3xl font-bold text-brand-orange mb-1">2k+</span>
-                <span className="text-sm text-brand-text">Happy Clients</span>
-              </div>
-              <div>
-                <span className="block text-3xl font-bold text-brand-orange mb-1">72</span>
-                <span className="text-sm text-brand-text">Brands</span>
-              </div>
-            </div>
           </div>
-          <div className="lg:w-1/2 pt-12 lg:pt-0">
-            <p className="text-brand-text text-sm leading-relaxed mb-4">
-              We believe that pets are family. That's why our dedicated team works tirelessly to discover innovative products that improve the wellbeing of your pets. With over 28 years of combined experience, we are here to support you in giving your furry friends the exceptional care they deserve.
-            </p>
-            <div className="flex gap-12 mt-8">
-              <div>
-                <span className="block text-3xl font-bold text-brand-orange mb-1">1.8k+</span>
-                <span className="text-sm text-brand-text">Products</span>
-              </div>
-              <div>
-                <span className="block text-3xl font-bold text-brand-orange mb-1">28</span>
-                <span className="text-sm text-brand-text">Years in business</span>
-              </div>
-            </div>
-          </div>
-        </section>
 
-        {/* Director Profile */}
-        <section className="mb-24 flex flex-col md:flex-row gap-12 items-center">
-          <div className="w-full md:w-1/3">
-            <div className="bg-gray-200 rounded-2xl h-80 w-full overflow-hidden flex items-center justify-center">
-              <i className="far fa-user text-6xl text-gray-400"></i>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {values.map((v, i) => (
+              <div key={i} className="bg-gray-50 rounded-2xl p-7 border border-gray-200 flex flex-col justify-between">
+                <div>
+                  <div className="w-12 h-12 rounded-xl bg-white border border-gray-200 text-brand-orange flex items-center justify-center text-lg mb-5 shadow-2xs">
+                    <i className={`fas ${v.icon}`}></i>
+                  </div>
+                  <h3 className="text-xl font-extrabold text-brand-dark mb-2.5">{v.title}</h3>
+                  <p className="text-sm text-gray-600 leading-relaxed font-normal">{v.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
-          <div className="w-full md:w-2/3">
-            <h3 className="text-2xl font-bold text-brand-dark">Taylor Joshua</h3>
-            <span className="text-sm text-brand-text block mb-6">Director</span>
-            <p className="text-brand-text text-sm italic leading-relaxed mb-4">
-              "Our philosophy is simple: prioritize the health and happiness of pets above all else. We've built this store on a foundation of trust and a deep commitment to animal welfare."
-            </p>
-            <p className="text-brand-text text-sm italic leading-relaxed mb-6">
-              "Every product we offer is something we would confidently give to our own pets. Seeing the joy our supplies bring to pets and their owners is what drives us every single day."
-            </p>
-            <div className="text-3xl font-[cursive] text-brand-dark">Taylor J.</div>
-          </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Our Team */}
-        <section className="mb-24 text-center">
-          <h2 className="text-3xl font-bold text-brand-dark mb-12">Our Team</h2>
+      {/* Real Team */}
+      <section className="px-4 md:px-12 lg:px-24 py-20">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-2xl mb-14">
+            <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-3">
+              {isVi ? 'Đội ngũ chăm sóc tận tâm' : 'Our Care Team'}
+            </h2>
+            <p className="text-base text-gray-600">
+              {isVi
+                ? 'Các bác sĩ và chuyên viên tạo kiểu được đào tạo bài bản, luôn xem thú cưng như thành viên gia đình.'
+                : 'Experienced veterinarians and certified stylists who treat every companion like their own.'}
+            </p>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-            <div>
-              <div className="bg-yellow-100 rounded-2xl h-64 mb-4 flex items-center justify-center">
-                <i className="far fa-user text-4xl text-gray-400"></i>
+            {team.map((member, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-2xs hover:border-gray-300 transition">
+                <div className="w-full h-64 bg-gray-100 overflow-hidden">
+                  <img
+                    src={member.photo}
+                    alt={member.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="p-5">
+                  <h3 className="font-extrabold text-lg text-brand-dark mb-1">{member.name}</h3>
+                  <p className="text-xs font-bold text-brand-orange uppercase tracking-wide mb-2">{member.role}</p>
+                  <p className="text-xs text-gray-500 font-medium">{member.exp}</p>
+                </div>
               </div>
-              <h4 className="font-bold text-brand-dark">Caroline Washington</h4>
-              <span className="text-xs text-brand-text">Seller</span>
-            </div>
-            <div>
-              <div className="bg-teal-100 rounded-2xl h-64 mb-4 flex items-center justify-center">
-                <i className="far fa-user text-4xl text-gray-400"></i>
-              </div>
-              <h4 className="font-bold text-brand-dark">Gerald Ferguson</h4>
-              <span className="text-xs text-brand-text">Seller</span>
-            </div>
-            <div>
-              <div className="bg-red-100 rounded-2xl h-64 mb-4 flex items-center justify-center">
-                <i className="far fa-user text-4xl text-gray-400"></i>
-              </div>
-              <h4 className="font-bold text-brand-dark">Brent Maddox</h4>
-              <span className="text-xs text-brand-text">Seller</span>
-            </div>
+            ))}
           </div>
-        </section>
-
-      </main>
-    </>
+        </div>
+      </section>
+    </div>
   );
 };
 

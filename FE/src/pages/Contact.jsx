@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import api from '../api/axios';
+import useLanguageStore from '../store/useLanguageStore';
 
 const Contact = () => {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', message: '' });
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState(null);
+  const { language } = useLanguageStore();
+
+  const isVi = language === 'vi';
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -22,46 +25,44 @@ const Contact = () => {
     } catch (err) {
       setFeedback({
         type: 'error',
-        text: err.response?.data?.message || 'Không thể gửi tin nhắn. Vui lòng thử lại sau.',
+        text: err.response?.data?.message || (isVi ? 'Không thể gửi tin nhắn. Vui lòng thử lại sau.' : 'Failed to send message. Please try again.'),
       });
     } finally {
       setSubmitting(false);
     }
   };
-  return (
-    <>
-      {/* Hero Section */}
-      <section className="relative bg-white pt-12 pb-16 px-4 md:px-12 lg:px-24 flex items-center justify-between overflow-hidden">
-        <div className="relative z-10 max-w-lg">
-          <span className="text-brand-orange font-bold text-sm tracking-widest uppercase mb-2 block">Pet Shop</span>
-          <h1 className="text-5xl font-extrabold text-brand-dark mb-4 leading-tight">If animals could talk,<br />they'd talk about us!</h1>
-          <p className="text-brand-text mb-8">Have a question about our products or need assistance with your order? Our friendly team is here to help you and your pet.</p>
-          <Link to="/shop" className="bg-brand-dark text-white px-8 py-3 rounded-md hover:bg-brand-orange transition-colors font-semibold inline-block">Shop Now</Link>
-        </div>
-        
-        {/* Hero Graphics */}
-        <div className="relative z-10 hidden md:block w-96 h-96">
-          <div className="absolute inset-0 bg-brand-orange blob-shape opacity-90 transform translate-x-4"></div>
-          <div className="absolute inset-4 bg-gray-200 blob-shape z-10 flex items-center justify-center overflow-hidden">
-            <i className="fas fa-paw text-8xl text-gray-400"></i>
-          </div>
-          <i className="fas fa-dove absolute -top-8 left-10 text-4xl text-gray-300"></i>
-        </div>
 
-        {/* Decorative elements */}
-        <div className="absolute top-1/4 -left-10 w-24 h-24 bg-brand-orange rounded-full opacity-80 blob-shape"></div>
-        <div className="absolute bottom-10 left-1/3 w-16 h-16 bg-brand-orange rounded-full opacity-80 blob-shape"></div>
+  return (
+    <div className="bg-white text-brand-dark min-h-screen">
+      {/* Header */}
+      <section className="px-4 md:px-12 lg:px-24 py-16 border-b border-gray-100 bg-[#fbf9f6]">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-tight mb-4">
+            {isVi ? 'Liên hệ & Hỗ trợ' : 'Get in Touch with Us'}
+          </h1>
+          <p className="text-base sm:text-lg text-gray-600 max-w-2xl leading-relaxed">
+            {isVi
+              ? 'Đội ngũ chăm sóc khách hàng và chuyên viên Pet Shop luôn sẵn sàng giải đáp thắc mắc về đơn hàng, dịch vụ spa và lịch tiêm chủng.'
+              : 'Our customer support and pet care team are always ready to assist with order inquiries, spa appointments, and care guidance.'}
+          </p>
+        </div>
       </section>
 
       {/* Main Content */}
-      <main className="py-16 px-4 md:px-12 lg:px-24 bg-white">
-        <div className="flex flex-col md:flex-row gap-16 mb-16">
+      <main className="py-16 px-4 md:px-12 lg:px-24">
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 mb-16">
           {/* Contact Form */}
-          <div className="md:w-1/2">
-            <form className="bg-brand-gray/30 p-10 rounded-2xl" onSubmit={handleSubmit}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div className="lg:col-span-7 bg-gray-50 border border-gray-200 p-8 rounded-2xl">
+            <h2 className="text-xl font-bold text-brand-dark mb-6">
+              {isVi ? 'Gửi tin nhắn trực tiếp' : 'Send Us a Message'}
+            </h2>
+
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="contact-firstname" className="block text-sm font-semibold text-brand-dark mb-2">First name</label>
+                  <label htmlFor="contact-firstname" className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">
+                    {isVi ? 'Họ đệm' : 'First Name'} <span className="text-red-500">*</span>
+                  </label>
                   <input
                     id="contact-firstname"
                     name="firstName"
@@ -71,12 +72,14 @@ const Contact = () => {
                     spellCheck="false"
                     value={form.firstName}
                     onChange={handleChange}
-                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-brand-orange"
-                    placeholder="First name"
+                    className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-orange"
+                    placeholder={isVi ? 'Nguyễn' : 'First name'}
                   />
                 </div>
                 <div>
-                  <label htmlFor="contact-lastname" className="block text-sm font-semibold text-brand-dark mb-2">Last name</label>
+                  <label htmlFor="contact-lastname" className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">
+                    {isVi ? 'Tên' : 'Last Name'} <span className="text-red-500">*</span>
+                  </label>
                   <input
                     id="contact-lastname"
                     name="lastName"
@@ -86,13 +89,16 @@ const Contact = () => {
                     spellCheck="false"
                     value={form.lastName}
                     onChange={handleChange}
-                    className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-brand-orange"
-                    placeholder="Last name"
+                    className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-orange"
+                    placeholder={isVi ? 'Văn An' : 'Last name'}
                   />
                 </div>
               </div>
-              <div className="mb-6">
-                <label htmlFor="contact-email" className="block text-sm font-semibold text-brand-dark mb-2">Email address</label>
+
+              <div>
+                <label htmlFor="contact-email" className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">
+                  {isVi ? 'Địa chỉ Email' : 'Email Address'} <span className="text-red-500">*</span>
+                </label>
                 <input
                   id="contact-email"
                   name="email"
@@ -102,22 +108,25 @@ const Contact = () => {
                   spellCheck="false"
                   value={form.email}
                   onChange={handleChange}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-brand-orange"
-                  placeholder="Email address"
+                  className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-brand-orange"
+                  placeholder="name@example.com"
                 />
               </div>
-              <div className="mb-6">
-                <label htmlFor="contact-message" className="block text-sm font-semibold text-brand-dark mb-2">Message</label>
+
+              <div>
+                <label htmlFor="contact-message" className="block text-xs font-semibold uppercase tracking-wider text-gray-600 mb-1.5">
+                  {isVi ? 'Nội dung tin nhắn' : 'Message'} <span className="text-red-500">*</span>
+                </label>
                 <textarea
                   id="contact-message"
                   name="message"
-                  rows="6"
+                  rows="5"
                   required
                   minLength="10"
                   value={form.message}
                   onChange={handleChange}
-                  className="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 outline-none resize-none focus:ring-2 focus:ring-brand-orange"
-                  placeholder="Your message..."
+                  className="w-full bg-white border border-gray-300 rounded-xl px-4 py-2.5 text-sm outline-none resize-none focus:ring-2 focus:ring-brand-orange"
+                  placeholder={isVi ? 'Nội dung cần hỗ trợ hoặc phản hồi của bạn…' : 'How can we help you and your pet?'}
                 ></textarea>
               </div>
 
@@ -125,8 +134,8 @@ const Contact = () => {
                 <div
                   role="status"
                   aria-live="polite"
-                  className={`mb-6 p-3 rounded-lg text-sm font-medium ${
-                    feedback.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                  className={`p-3.5 rounded-xl text-sm font-medium ${
+                    feedback.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-800 border border-red-200'
                   }`}
                 >
                   {feedback.text}
@@ -136,67 +145,89 @@ const Contact = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="bg-brand-orange text-white font-bold py-3 px-8 rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 cursor-pointer"
+                className="bg-brand-dark hover:bg-black text-white font-bold py-3 px-7 rounded-xl text-sm transition disabled:opacity-50 cursor-pointer"
               >
-                {submitting ? 'Đang gửi…' : 'Send Message'}
+                {submitting ? (isVi ? 'Đang gửi…' : 'Sending…') : (isVi ? 'Gửi tin nhắn' : 'Send Message')}
               </button>
             </form>
           </div>
 
-          {/* Contact Information */}
-          <div className="md:w-1/2 pt-4">
-            <h2 className="text-3xl font-extrabold text-brand-dark mb-6">Feel free to contact us</h2>
-            <p className="text-brand-text text-sm leading-relaxed mb-10">
-              Whether you have feedback, inquiries, or just want to share a cute story about your pet, we would love to hear from you. Drop us a message and we will respond promptly!
-            </p>
-            
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full border border-brand-orange text-brand-orange flex items-center justify-center shrink-0">
-                  <i className="fas fa-map-marker-alt"></i>
-                </div>
-                <p className="text-brand-dark font-medium">Khu Công Nghệ Cao Hòa Lạc, CT03, Hòa Lạc, Hà Nội, Việt Nam</p>
-              </div>
+          {/* Contact Details */}
+          <div className="lg:col-span-5 flex flex-col justify-between">
+            <div>
+              <h2 className="text-2xl font-extrabold text-brand-dark mb-4">
+                {isVi ? 'Thông tin cửa hàng' : 'Store Information'}
+              </h2>
+              <p className="text-sm text-gray-600 leading-relaxed mb-8">
+                {isVi
+                  ? 'Ghé thăm cửa hàng hoặc liên hệ trực tiếp với chúng tôi qua số điện thoại và email.'
+                  : 'Visit our flagship care center or connect directly with our friendly support representatives.'}
+              </p>
 
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full border border-brand-orange text-brand-orange flex items-center justify-center shrink-0">
-                  <i className="fas fa-envelope"></i>
+              <div className="space-y-5 text-sm">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 border border-orange-100">
+                    <i className="fas fa-map-marker-alt"></i>
+                  </div>
+                  <div>
+                    <div className="font-bold text-brand-dark">{isVi ? 'Địa chỉ' : 'Location'}</div>
+                    <p className="text-gray-500 text-xs mt-0.5">Khu Công Nghệ Cao Hòa Lạc, CT03, Hòa Lạc, Hà Nội, Việt Nam</p>
+                  </div>
                 </div>
-                <p className="text-brand-dark font-medium">chinhhmhe171181@fpt.edu.vn</p>
-              </div>
 
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full border border-brand-orange text-brand-orange flex items-center justify-center shrink-0">
-                  <i className="fas fa-phone"></i>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 border border-orange-100">
+                    <i className="fas fa-envelope"></i>
+                  </div>
+                  <div>
+                    <div className="font-bold text-brand-dark">Email</div>
+                    <p className="text-gray-500 text-xs mt-0.5">chinhhmhe171181@fpt.edu.vn</p>
+                  </div>
                 </div>
-                <p className="text-brand-dark font-medium">+8493-629-5902</p>
-              </div>
 
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full border border-brand-orange text-brand-orange flex items-center justify-center shrink-0">
-                  <i className="far fa-clock"></i>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 border border-orange-100">
+                    <i className="fas fa-phone"></i>
+                  </div>
+                  <div>
+                    <div className="font-bold text-brand-dark">{isVi ? 'Hotline hỗ trợ' : 'Phone'}</div>
+                    <p className="text-gray-500 text-xs mt-0.5">+84 93-629-5902</p>
+                  </div>
                 </div>
-                <p className="text-brand-dark font-medium">Mon - Fri: 10AM - 10PM</p>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 border border-orange-100">
+                    <i className="far fa-clock"></i>
+                  </div>
+                  <div>
+                    <div className="font-bold text-brand-dark">{isVi ? 'Thời gian mở cửa' : 'Working Hours'}</div>
+                    <p className="text-gray-500 text-xs mt-0.5">{isVi ? 'Thứ 2 - Chủ Nhật: 08:00 - 21:00' : 'Monday - Sunday: 8:00 AM - 9:00 PM'}</p>
+                  </div>
+                </div>
               </div>
+            </div>
+
+            <div className="mt-8 p-4 bg-orange-50/50 border border-orange-100 rounded-xl text-xs text-brand-orange font-medium">
+              🐾 {isVi ? 'Chăm sóc chu đáo, hỗ trợ tư vấn 24/7 cho các ca y tế khẩn cấp.' : '24/7 dedicated support for emergency veterinary inquiries.'}
             </div>
           </div>
         </div>
 
-        {/* Map Placeholder */}
-        <div className="w-full h-96 bg-gray-200 rounded-3xl overflow-hidden relative">
-          <iframe 
-            src="https://maps.google.com/maps?q=21.0124167,105.5252892&z=16&output=embed" 
-            width="100%" 
-            height="100%" 
-            style={{ border: 0 }} 
-            allowFullScreen="" 
-            loading="lazy" 
-            title="Google Map"
+        {/* Map */}
+        <div className="w-full h-80 rounded-2xl overflow-hidden border border-gray-200">
+          <iframe
+            src="https://maps.google.com/maps?q=21.0124167,105.5252892&z=16&output=embed"
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen=""
+            loading="lazy"
+            title="Pet Shop Location Map"
             referrerPolicy="no-referrer-when-downgrade"
           ></iframe>
         </div>
       </main>
-    </>
+    </div>
   );
 };
 
