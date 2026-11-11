@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../store/useAuthStore';
+import useLanguageStore from '../../store/useLanguageStore';
 
 // Preset avatar options for quick selection
 const PRESET_AVATARS = [
@@ -23,7 +24,10 @@ const TIER_CONFIG = {
     cardGradient: 'from-amber-500/10 via-orange-500/5 to-white border-amber-200',
     progressColor: 'bg-amber-600',
     icon: '🥉',
-    perks: ['1x Point earn rate on all purchases', 'Standard customer support', 'Special birthday coupon'],
+    perks: {
+      vi: ['Tích 1x điểm trên mỗi đơn hàng', 'Hỗ trợ khách hàng tiêu chuẩn', 'Mã giảm giá quà tặng sinh nhật'],
+      en: ['1x Point earn rate on all purchases', 'Standard customer support', 'Special birthday coupon'],
+    },
   },
   Silver: {
     name: 'Silver',
@@ -35,7 +39,10 @@ const TIER_CONFIG = {
     cardGradient: 'from-slate-300/20 via-slate-100/10 to-white border-slate-300',
     progressColor: 'bg-slate-500',
     icon: '🥈',
-    perks: ['5% Discount on select accessories', '1.2x Point earn rate', 'Priority customer support'],
+    perks: {
+      vi: ['Giảm 5% cho phụ kiện chọn lọc', 'Tích 1.2x điểm thưởng', 'Hỗ trợ khách hàng ưu tiên'],
+      en: ['5% Discount on select accessories', '1.2x Point earn rate', 'Priority customer support'],
+    },
   },
   Gold: {
     name: 'Gold',
@@ -47,7 +54,10 @@ const TIER_CONFIG = {
     cardGradient: 'from-yellow-400/15 via-amber-200/10 to-white border-yellow-300',
     progressColor: 'bg-yellow-500',
     icon: '🥇',
-    perks: ['10% Discount on all orders', 'Free standard shipping', '1.5x Point earn rate', 'Exclusive quarterly surprise box'],
+    perks: {
+      vi: ['Giảm 10% cho toàn bộ đơn hàng', 'Miễn phí giao hàng tiêu chuẩn', 'Tích 1.5x điểm thưởng', 'Hộp quà bất ngờ hàng quý'],
+      en: ['10% Discount on all orders', 'Free standard shipping', '1.5x Point earn rate', 'Exclusive quarterly surprise box'],
+    },
   },
   Diamond: {
     name: 'Diamond',
@@ -59,12 +69,16 @@ const TIER_CONFIG = {
     cardGradient: 'from-cyan-400/20 via-blue-500/10 to-white border-cyan-300',
     progressColor: 'bg-gradient-to-r from-cyan-500 to-blue-600',
     icon: '💎',
-    perks: ['15% VIP Discount on all orders & services', 'Free express shipping', '2x Point earn rate', '24/7 dedicated pet concierge'],
+    perks: {
+      vi: ['Giảm 15% VIP cho mọi đơn và dịch vụ', 'Miễn phí giao hàng hỏa tốc', 'Tích 2x điểm thưởng', 'Chăm sóc viên thú cưng riêng 24/7'],
+      en: ['15% VIP Discount on all orders & services', 'Free express shipping', '2x Point earn rate', '24/7 dedicated pet concierge'],
+    },
   },
 };
 
 const Profile = () => {
-  const { user, updateProfile, fetchProfile, isLoading, clearError } = useAuthStore();
+  const { user, updateProfile, fetchProfile, isLoading } = useAuthStore();
+  const { t, language } = useLanguageStore();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
@@ -133,7 +147,7 @@ const Profile = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setMessage('Please select a valid image file (.jpg, .png, .webp)');
+      setMessage(language === 'vi' ? 'Vui lòng chọn tệp hình ảnh hợp lệ (.jpg, .png, .webp)' : 'Please select a valid image file (.jpg, .png, .webp)');
       return;
     }
 
@@ -182,22 +196,22 @@ const Profile = () => {
 
     // Validate phone number if entered
     if (phone && !/^[0-9+() -]{8,15}$/.test(phone.trim())) {
-      setMessage('Invalid phone number format (please enter 8-15 digits)');
+      setMessage(language === 'vi' ? 'Số điện thoại không hợp lệ (vui lòng nhập 8-15 chữ số)' : 'Invalid phone number format (please enter 8-15 digits)');
       return;
     }
 
     // Validate password change
     if (isChangingPassword) {
       if (!currentPassword) {
-        setMessage('Please enter your current password to proceed with password change');
+        setMessage(language === 'vi' ? 'Vui lòng nhập mật khẩu hiện tại' : 'Please enter your current password');
         return;
       }
       if (!password || password.length < 6) {
-        setMessage('New password must be at least 6 characters');
+        setMessage(language === 'vi' ? 'Mật khẩu mới phải có tối thiểu 6 ký tự' : 'New password must be at least 6 characters');
         return;
       }
       if (password !== confirmPassword) {
-        setMessage('New password and confirm password do not match');
+        setMessage(language === 'vi' ? 'Mật khẩu mới và xác nhận mật khẩu không khớp' : 'New password and confirm password do not match');
         return;
       }
     }
@@ -233,9 +247,11 @@ const Profile = () => {
       case 'staff':
         return <span className="bg-blue-100 text-blue-700 border border-blue-200 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider">Staff</span>;
       default:
-        return <span className="bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider">Customer</span>;
+        return <span className="bg-emerald-100 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider">{language === 'vi' ? 'Khách hàng' : 'Customer'}</span>;
     }
   };
+
+  const currentPerks = tierInfo.perks[language] || tierInfo.perks.vi;
 
   return (
     <div className="py-10 px-4 md:px-8 lg:px-16 bg-gray-50 min-h-screen">
@@ -243,14 +259,14 @@ const Profile = () => {
         {/* Header Breadcrumb */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-brand-dark tracking-tight">User Profile</h1>
-            <p className="text-sm text-gray-500 mt-1">Manage your account details, membership tier, and security settings</p>
+            <h1 className="text-3xl font-extrabold text-brand-dark tracking-tight">{t('profile_title')}</h1>
+            <p className="text-sm text-gray-500 mt-1">{t('profile_sub')}</p>
           </div>
           <Link
             to="/shop"
             className="text-sm font-medium text-brand-orange hover:underline flex items-center gap-1.5"
           >
-            <i className="fas fa-arrow-left text-xs"></i> Continue Shopping
+            <i className="fas fa-arrow-left text-xs"></i> {t('continue_shopping')}
           </Link>
         </div>
 
@@ -272,8 +288,8 @@ const Profile = () => {
             <div className="flex items-center gap-3">
               <i className="fas fa-check-circle text-xl text-emerald-500"></i>
               <div>
-                <p className="text-sm font-semibold">Profile updated successfully!</p>
-                <p className="text-xs text-emerald-600">Your personal information and settings have been saved.</p>
+                <p className="text-sm font-semibold">{t('profile_updated_success')}</p>
+                <p className="text-xs text-emerald-600">{t('profile_updated_sub')}</p>
               </div>
             </div>
             <button onClick={() => setSuccess(false)} className="text-emerald-400 hover:text-emerald-600">
@@ -327,17 +343,17 @@ const Profile = () => {
                 <button
                   type="button"
                   onClick={() => setShowPresets(!showPresets)}
-                  className="text-xs text-brand-orange bg-orange-50 hover:bg-orange-100 border border-orange-200 px-3 py-1 rounded-full font-medium transition-colors"
+                  className="text-xs text-brand-orange bg-orange-50 hover:bg-orange-100 border border-orange-200 px-3 py-1 rounded-full font-medium transition-colors cursor-pointer"
                 >
-                  <i className="fas fa-paw mr-1"></i> Choose Pet Avatar
+                  <i className="fas fa-paw mr-1"></i> {t('choose_pet_avatar')}
                 </button>
                 {avatar && (
                   <button
                     type="button"
                     onClick={removeAvatar}
-                    className="text-xs text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1 rounded-full font-medium transition-colors"
+                    className="text-xs text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1 rounded-full font-medium transition-colors cursor-pointer"
                   >
-                    <i className="fas fa-trash-alt mr-1"></i> Remove Photo
+                    <i className="fas fa-trash-alt mr-1"></i> {t('remove_photo')}
                   </button>
                 )}
               </div>
@@ -345,7 +361,7 @@ const Profile = () => {
               {/* Preset selection dropdown */}
               {showPresets && (
                 <div className="mb-4 p-3 bg-orange-50/50 rounded-xl border border-orange-100 animate-fadeIn">
-                  <p className="text-xs text-gray-500 font-medium mb-2">Select an avatar:</p>
+                  <p className="text-xs text-gray-500 font-medium mb-2">{t('select_avatar_title')}</p>
                   <div className="flex justify-center gap-2">
                     {PRESET_AVATARS.map((presetUrl, idx) => (
                       <button
@@ -381,33 +397,34 @@ const Profile = () => {
               <div className="pt-4 border-t border-gray-100 text-left text-xs text-gray-500 space-y-2">
                 <div className="flex items-center gap-2">
                   <i className="fas fa-phone text-brand-orange w-4"></i>
-                  <span>{phone || 'No phone number added'}</span>
+                  <span>{phone || t('no_phone')}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <i className="fas fa-map-marker-alt text-brand-orange w-4"></i>
-                  <span className="truncate">{address || 'No shipping address added'}</span>
+                  <span className="truncate">{address || t('no_address')}</span>
                 </div>
               </div>
             </div>
 
             {/* Quick Links Card */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-3 mb-2">Quick Access</h3>
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider px-3 mb-2">{t('quick_access')}</h3>
               <nav className="space-y-1">
-                <Link to="/addresses" className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-brand-orange transition-colors">
-                  <span className="flex items-center gap-3"><i className="fas fa-map-marker-alt text-gray-400 w-5"></i> Địa chỉ giao hàng</span>
-                  <i className="fas fa-chevron-right text-xs text-gray-300"></i>
-                </Link>
-                <Link to="/notifications" className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-brand-orange transition-colors">
-                  <span className="flex items-center gap-3"><i className="far fa-bell text-gray-400 w-5"></i> Thông báo đơn hàng</span>
-                  <i className="fas fa-chevron-right text-xs text-gray-300"></i>
-                </Link>
                 <Link
                   to="/orders/myorders"
                   className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-brand-orange transition-colors"
                 >
                   <span className="flex items-center gap-3">
-                    <i className="fas fa-box-open text-gray-400 w-5"></i> My Orders
+                    <i className="fas fa-box-open text-gray-400 w-5"></i> {t('my_orders')}
+                  </span>
+                  <i className="fas fa-chevron-right text-xs text-gray-300"></i>
+                </Link>
+                <Link
+                  to="/my-appointments"
+                  className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-brand-orange transition-colors"
+                >
+                  <span className="flex items-center gap-3">
+                    <i className="far fa-calendar-check text-gray-400 w-5"></i> {t('my_appointments')}
                   </span>
                   <i className="fas fa-chevron-right text-xs text-gray-300"></i>
                 </Link>
@@ -416,7 +433,7 @@ const Profile = () => {
                   className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-brand-orange transition-colors"
                 >
                   <span className="flex items-center gap-3">
-                    <i className="fas fa-paw text-gray-400 w-5"></i> Pet Profiles
+                    <i className="fas fa-paw text-gray-400 w-5"></i> {t('my_pets')}
                   </span>
                   <i className="fas fa-chevron-right text-xs text-gray-300"></i>
                 </Link>
@@ -425,16 +442,16 @@ const Profile = () => {
                   className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-brand-orange transition-colors"
                 >
                   <span className="flex items-center gap-3">
-                    <i className="far fa-heart text-gray-400 w-5"></i> My Wishlist
+                    <i className="far fa-heart text-gray-400 w-5"></i> {t('my_wishlist')}
                   </span>
                   <i className="fas fa-chevron-right text-xs text-gray-300"></i>
                 </Link>
                 <Link
-                  to="/book-appointment"
+                  to="/notifications"
                   className="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-brand-orange transition-colors"
                 >
                   <span className="flex items-center gap-3">
-                    <i className="far fa-calendar-check text-gray-400 w-5"></i> Book Appointment
+                    <i className="far fa-bell text-gray-400 w-5"></i> {t('notifications')}
                   </span>
                   <i className="fas fa-chevron-right text-xs text-gray-300"></i>
                 </Link>
@@ -456,28 +473,28 @@ const Profile = () => {
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-2xl">{tierInfo.icon}</span>
                     <h2 className="text-xl font-extrabold text-brand-dark tracking-tight">
-                      {currentTier} Tier Membership
+                      {currentTier} {t('tier_membership_title')}
                     </h2>
                     <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold border shadow-xs ${tierInfo.badgeClass}`}>
-                      Active Status
+                      {t('active_status')}
                     </span>
                   </div>
                   <p className="text-xs text-gray-500">
-                    Earn 1 point for every $1 spent on orders. Redeem points for exclusive perks!
+                    {t('tier_earn_hint')}
                   </p>
                 </div>
 
                 {/* Points counter pill */}
                 <div className="bg-white/90 backdrop-blur-sm border border-gray-200/80 rounded-2xl px-5 py-3 shadow-sm text-right">
                   <div className="text-xs font-medium text-gray-500 uppercase tracking-wider flex items-center gap-1.5 justify-end">
-                    <i className="fas fa-coins text-amber-500"></i> Reward Points
+                    <i className="fas fa-coins text-amber-500"></i> {t('reward_points_title')}
                   </div>
                   <div className="text-3xl font-black text-brand-dark tracking-tight">
                     {rewardPoints.toLocaleString()}
-                    <span className="text-xs font-bold text-brand-orange ml-1">pts</span>
+                    <span className="text-xs font-bold text-brand-orange ml-1">{t('pts_unit')}</span>
                   </div>
                   <div className="text-[11px] text-gray-400">
-                    ≈ ${(rewardPoints / 100).toFixed(2)} savings value
+                    ≈ ${(rewardPoints / 100).toFixed(2)} {t('savings_value')}
                   </div>
                 </div>
               </div>
@@ -490,7 +507,7 @@ const Profile = () => {
                   </span>
                   {tierInfo.nextTier ? (
                     <span className="text-brand-dark flex items-center gap-1.5">
-                      <span>{TIER_CONFIG[tierInfo.nextTier]?.icon}</span> {tierInfo.nextTier} ({tierInfo.nextThreshold?.toLocaleString()} pts)
+                      <span>{TIER_CONFIG[tierInfo.nextTier]?.icon}</span> {tierInfo.nextTier} ({tierInfo.nextThreshold?.toLocaleString()} {t('pts_unit')})
                     </span>
                   ) : (
                     <span className="text-cyan-700 font-extrabold">👑 VIP Highest Tier</span>
@@ -506,15 +523,15 @@ const Profile = () => {
                 </div>
 
                 <div className="flex justify-between items-center mt-2 text-[11px] text-gray-500">
-                  <span>Current balance: <strong className="text-brand-dark">{rewardPoints.toLocaleString()} pts</strong></span>
+                  <span>{t('current_balance')} <strong className="text-brand-dark">{rewardPoints.toLocaleString()} {t('pts_unit')}</strong></span>
                   {tierInfo.nextTier ? (
                     <span className="font-medium text-brand-orange">
                       <i className="fas fa-bolt text-xs mr-1"></i>
-                      Only <strong>{pointsToNext.toLocaleString()} more pts</strong> to reach {tierInfo.nextTier}!
+                      {t('only_prefix')} <strong>{pointsToNext.toLocaleString()} {t('more_pts_to_reach')}</strong> {tierInfo.nextTier}!
                     </span>
                   ) : (
                     <span className="font-bold text-cyan-600">
-                      🎉 You enjoy all maximum Diamond perks!
+                      {t('diamond_perks_max')}
                     </span>
                   )}
                 </div>
@@ -523,8 +540,8 @@ const Profile = () => {
               {/* Perks List & View All Tiers button */}
               <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-semibold text-gray-600">Your Perks:</span>
-                  {tierInfo.perks.slice(0, 2).map((perk, i) => (
+                  <span className="text-xs font-semibold text-gray-600">{t('your_perks')}</span>
+                  {currentPerks.slice(0, 2).map((perk, i) => (
                     <span
                       key={i}
                       className="bg-white/90 text-gray-700 text-xs px-2.5 py-1 rounded-lg border border-gray-200/60 font-medium flex items-center gap-1.5 shadow-2xs"
@@ -540,7 +557,7 @@ const Profile = () => {
                   onClick={() => setShowTiersModal(true)}
                   className="text-xs text-brand-orange hover:text-orange-700 font-bold underline flex items-center gap-1 cursor-pointer"
                 >
-                  <i className="fas fa-info-circle"></i> View All Tier Benefits
+                  <i className="fas fa-info-circle"></i> {t('view_all_tier_benefits')}
                 </button>
               </div>
             </div>
@@ -554,8 +571,8 @@ const Profile = () => {
                     <i className="far fa-id-card"></i>
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-brand-dark">Personal & Shipping Information</h2>
-                    <p className="text-xs text-gray-500">This information is used for order checkouts and delivery</p>
+                    <h2 className="text-lg font-bold text-brand-dark">{t('personal_shipping_info')}</h2>
+                    <p className="text-xs text-gray-500">{t('personal_shipping_sub')}</p>
                   </div>
                 </div>
 
@@ -563,7 +580,7 @@ const Profile = () => {
                   {/* Name */}
                   <div className="md:col-span-1">
                     <label htmlFor="name" className="block text-sm font-semibold text-gray-700 mb-1">
-                      Full Name <span className="text-red-500">*</span>
+                      {t('full_name')} <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -584,7 +601,7 @@ const Profile = () => {
                   {/* Email */}
                   <div className="md:col-span-1">
                     <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-1">
-                      Email Address <span className="text-red-500">*</span>
+                      {t('email_address')} <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -605,7 +622,7 @@ const Profile = () => {
                   {/* Phone */}
                   <div className="md:col-span-1">
                     <label htmlFor="phone" className="block text-sm font-semibold text-gray-700 mb-1">
-                      Phone Number
+                      {t('phone_number')}
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -616,7 +633,7 @@ const Profile = () => {
                         type="tel"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        placeholder="+1 555-0199 or 0912 345 678"
+                        placeholder="+84 912 345 678"
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition-all"
                       />
                     </div>
@@ -625,7 +642,7 @@ const Profile = () => {
                   {/* Avatar URL direct input */}
                   <div className="md:col-span-1">
                     <label htmlFor="avatarUrl" className="block text-sm font-semibold text-gray-700 mb-1">
-                      Avatar Image URL
+                      {t('avatar_url')}
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -645,7 +662,7 @@ const Profile = () => {
                   {/* Address */}
                   <div className="md:col-span-2">
                     <label htmlFor="address" className="block text-sm font-semibold text-gray-700 mb-1">
-                      Default Shipping Address
+                      {t('default_shipping_address')}
                     </label>
                     <div className="relative">
                       <div className="absolute top-3 left-3.5 pointer-events-none text-gray-400">
@@ -656,7 +673,7 @@ const Profile = () => {
                         rows="3"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        placeholder="Street address, apartment, suite, city, state/province, postal code..."
+                        placeholder={t('address_placeholder')}
                         className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition-all"
                       />
                     </div>
@@ -672,8 +689,8 @@ const Profile = () => {
                       <i className="fas fa-shield-alt"></i>
                     </div>
                     <div>
-                      <h2 className="text-lg font-bold text-brand-dark">Security & Password</h2>
-                      <p className="text-xs text-gray-500">Keep your account secure with a strong password</p>
+                      <h2 className="text-lg font-bold text-brand-dark">{t('security_password')}</h2>
+                      <p className="text-xs text-gray-500">{t('security_password_sub')}</p>
                     </div>
                   </div>
 
@@ -693,25 +710,25 @@ const Profile = () => {
                         : 'bg-orange-50 text-brand-orange border-orange-200 hover:bg-orange-100'
                     }`}
                   >
-                    {isChangingPassword ? 'Cancel' : 'Change Password'}
+                    {isChangingPassword ? t('cancel_change_password') : t('change_password')}
                   </button>
                 </div>
 
                 {!isChangingPassword ? (
                   <p className="text-sm text-gray-500 py-2">
-                    Your password is secure. Click <strong className="text-brand-dark font-medium">"Change Password"</strong> above if you wish to set a new password.
+                    {t('password_secure_note')}
                   </p>
                 ) : (
                   <div className="space-y-4 pt-2 animate-fadeIn">
                     <div className="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-3 rounded-xl flex items-start gap-2">
                       <i className="fas fa-info-circle text-amber-500 mt-0.5"></i>
-                      <span>For your security, you must enter your current password before setting a new one.</span>
+                      <span>{t('password_security_warning')}</span>
                     </div>
 
                     {/* Current Password */}
                     <div>
                       <label htmlFor="currentPassword" className="block text-sm font-semibold text-gray-700 mb-1">
-                        Current Password <span className="text-red-500">*</span>
+                        {t('current_password')} <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -722,7 +739,7 @@ const Profile = () => {
                           type={showCurrentPassword ? 'text' : 'password'}
                           value={currentPassword}
                           onChange={(e) => setCurrentPassword(e.target.value)}
-                          placeholder="Enter current password"
+                          placeholder={t('enter_current_password')}
                           className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition-all"
                         />
                         <button
@@ -739,7 +756,7 @@ const Profile = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <label htmlFor="newPassword" className="block text-sm font-semibold text-gray-700 mb-1">
-                          New Password <span className="text-red-500">*</span>
+                          {t('new_password')} <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -750,7 +767,7 @@ const Profile = () => {
                             type={showNewPassword ? 'text' : 'password'}
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="Minimum 6 characters"
+                            placeholder={t('new_password_placeholder')}
                             className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition-all"
                           />
                           <button
@@ -765,7 +782,7 @@ const Profile = () => {
 
                       <div>
                         <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-1">
-                          Confirm New Password <span className="text-red-500">*</span>
+                          {t('confirm_new_password')} <span className="text-red-500">*</span>
                         </label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -776,7 +793,7 @@ const Profile = () => {
                             type={showConfirmPassword ? 'text' : 'password'}
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            placeholder="Re-enter new password"
+                            placeholder={t('confirm_password_placeholder')}
                             className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-orange focus:border-brand-orange transition-all"
                           />
                           <button
@@ -794,7 +811,7 @@ const Profile = () => {
                     {password && confirmPassword && (
                       <p className={`text-xs font-medium flex items-center gap-1.5 ${password === confirmPassword ? 'text-emerald-600' : 'text-red-500'}`}>
                         <i className={`fas ${password === confirmPassword ? 'fa-check' : 'fa-times'}`}></i>
-                        {password === confirmPassword ? 'Passwords match' : 'Passwords do not match'}
+                        {password === confirmPassword ? t('passwords_match') : t('passwords_not_match')}
                       </p>
                     )}
                   </div>
@@ -811,12 +828,12 @@ const Profile = () => {
                   {isLoading ? (
                     <>
                       <i className="fas fa-spinner fa-spin"></i>
-                      <span>Saving changes...</span>
+                      <span>{t('saving_changes')}</span>
                     </>
                   ) : (
                     <>
                       <i className="fas fa-save"></i>
-                      <span>Save Changes</span>
+                      <span>{t('save_changes')}</span>
                     </>
                   )}
                 </button>
@@ -834,8 +851,8 @@ const Profile = () => {
               <div className="flex items-center gap-2.5">
                 <span className="text-2xl">✨</span>
                 <div>
-                  <h3 className="text-xl font-extrabold text-brand-dark">Pet Store Membership Program</h3>
-                  <p className="text-xs text-gray-500">Collect reward points on every order to unlock VIP tier benefits</p>
+                  <h3 className="text-xl font-extrabold text-brand-dark">{t('membership_program_title')}</h3>
+                  <p className="text-xs text-gray-500">{t('membership_program_sub')}</p>
                 </div>
               </div>
               <button
@@ -851,6 +868,7 @@ const Profile = () => {
               {Object.keys(TIER_CONFIG).map((tierKey) => {
                 const tier = TIER_CONFIG[tierKey];
                 const isCurrent = currentTier === tierKey;
+                const perks = tier.perks[language] || tier.perks.vi;
 
                 return (
                   <div
@@ -867,19 +885,19 @@ const Profile = () => {
                         <div>
                           <span className="font-extrabold text-brand-dark text-base">{tier.name}</span>
                           <span className="text-xs text-gray-500 ml-2">
-                            ({tier.minPoints.toLocaleString()} - {tier.nextThreshold ? `${(tier.nextThreshold - 1).toLocaleString()} pts` : '∞'})
+                            ({tier.minPoints.toLocaleString()} - {tier.nextThreshold ? `${(tier.nextThreshold - 1).toLocaleString()} ${t('pts_unit')}` : '∞'})
                           </span>
                         </div>
                       </div>
                       {isCurrent && (
                         <span className="bg-brand-orange text-white text-[11px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-xs">
-                          Current Tier
+                          {t('current_tier_badge')}
                         </span>
                       )}
                     </div>
 
                     <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 mt-3 pt-3 border-t border-gray-100/80">
-                      {tier.perks.map((perk, idx) => (
+                      {perks.map((perk, idx) => (
                         <li key={idx} className="text-xs text-gray-600 flex items-center gap-2">
                           <i className="fas fa-check-circle text-emerald-500 text-xs shrink-0"></i>
                           <span>{perk}</span>
@@ -889,16 +907,6 @@ const Profile = () => {
                   </div>
                 );
               })}
-            </div>
-
-            <div className="mt-6 pt-4 border-t border-gray-100 text-center">
-              <button
-                type="button"
-                onClick={() => setShowTiersModal(false)}
-                className="bg-brand-dark text-white text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-brand-orange transition-colors cursor-pointer"
-              >
-                Close
-              </button>
             </div>
           </div>
         </div>

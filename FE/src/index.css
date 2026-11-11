@@ -1,6 +1,11 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
+body {
+    font-family: 'Plus Jakarta Sans', Inter, system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.01em;
+}
+
 /* Custom utilities for decorative elements */
 .blob-shape {
     border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
