@@ -65,6 +65,11 @@ const userSchema = new mongoose.Schema(
         ref: "Product",
       },
     ],
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   {
     timestamps: true,

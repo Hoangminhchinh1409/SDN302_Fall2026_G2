@@ -23,6 +23,11 @@ const appointmentSchema = new mongoose.Schema({
     type: String,
     enum: ['Pending', 'Confirmed', 'Completed', 'Cancelled'],
     default: 'Pending'
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+    index: true
   }
 }, {
   timestamps: true

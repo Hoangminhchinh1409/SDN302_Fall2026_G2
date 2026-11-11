@@ -19,7 +19,7 @@ const getProducts = async (req, res) => {
         }
       : {};
 
-    const filter = { ...keyword };
+    const filter = { ...keyword, isDeleted: { $ne: true } };
 
     if (req.query.category) {
       let categories = req.query.category;
@@ -170,7 +170,8 @@ const deleteProduct = async (req, res) => {
     const product = await Product.findById(req.params.id);
 
     if (product) {
-      await product.deleteOne();
+      product.isDeleted = true;
+      await product.save();
       res.json({ message: 'Product removed' });
     } else {
       res.status(404).json({ message: 'Product not found' });
@@ -226,6 +227,30 @@ const createProductReview = async (req, res) => {
   }
 };
 
+// @desc    Update product stock only
+// @route   PATCH /api/products/:id/stock
+// @access  Private/Staff
+const updateProductStock = async (req, res) => {
+  try {
+    const { stock } = req.body;
+    if (stock === undefined || isNaN(stock) || Number(stock) < 0) {
+      return res.status(400).json({ message: 'Số lượng tồn kho không hợp lệ' });
+    }
+
+    const product = await Product.findById(req.params.id);
+    if (!product) {
+      return res.status(404).json({ message: 'Product not found' });
+    }
+
+    product.stock = Number(stock);
+    const updated = await product.save();
+    res.json({ _id: updated._id, stock: updated.stock, name: updated.name });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server Error' });
+  }
+};
+
 module.exports = {
   getProducts,
   getProductById,
@@ -233,4 +258,5 @@ module.exports = {
   updateProduct,
   deleteProduct,
   createProductReview,
+  updateProductStock,
 };

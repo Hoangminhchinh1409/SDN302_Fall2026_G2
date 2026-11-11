@@ -9,6 +9,9 @@ const authUser = async (req, res) => {
   const user = await User.findOne({ email }).select('+password');
 
   if (user && (await user.matchPassword(password))) {
+    if (user.isDeleted) {
+      return res.status(401).json({ message: 'Tài khoản này đã bị khóa hoặc xóa.' });
+    }
     generateToken(res, user._id);
     res.json({
       _id: user._id,
@@ -190,7 +193,7 @@ const deleteUserAddress = async (req, res) => {
 // @route   GET /api/users
 // @access  Private/Admin
 const getUsers = async (req, res) => {
-  const users = await User.find({});
+  const users = await User.find({ isDeleted: { $ne: true } });
   res.json(users);
 };
 
@@ -204,7 +207,8 @@ const deleteUser = async (req, res) => {
       res.status(400).json({ message: 'Cannot delete admin user' });
       return;
     }
-    await User.deleteOne({ _id: user._id });
+    user.isDeleted = true;
+    await user.save();
     res.json({ message: 'User removed' });
   } else {
     res.status(404).json({ message: 'User not found' });

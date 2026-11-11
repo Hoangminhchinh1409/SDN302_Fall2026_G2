@@ -13,9 +13,9 @@ const notifyUser = async (notification) => {
 };
 
 const getMyAppointments = async (req, res) => {
-  let filter = { user: req.user._id };
+  let filter = { user: req.user._id, isDeleted: { $ne: true } };
   if (req.user.role === 'admin' || req.user.role === 'staff') {
-    filter = {}; // Admin and staff can see all
+    filter = { isDeleted: { $ne: true } }; // Admin and staff can see all active
   }
   const appointments = await Appointment.find(filter)
     .populate('service pet user')
@@ -102,6 +102,23 @@ const updateAppointmentStatus = async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
     }
 
+    const previousStatus = appointment.status;
+    const APPOINTMENT_TRANSITIONS = {
+      Pending: ['Confirmed', 'Cancelled'],
+      Confirmed: ['Completed', 'Cancelled'],
+      Completed: [],
+      Cancelled: []
+    };
+
+    if (previousStatus !== status) {
+      const validNext = APPOINTMENT_TRANSITIONS[previousStatus] || [];
+      if (!validNext.includes(status)) {
+        return res.status(400).json({
+          message: `Không thể chuyển lịch hẹn từ trạng thái "${previousStatus}" sang "${status}".`
+        });
+      }
+    }
+
     appointment.status = status;
     await appointment.save();
     await appointment.populate('service pet user');
@@ -167,7 +184,8 @@ const deleteAppointment = async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
     }
 
-    await appointment.deleteOne();
+    appointment.isDeleted = true;
+    await appointment.save();
     res.json({ message: 'Đã xóa lịch hẹn' });
   } catch (error) {
     console.error('deleteAppointment error:', error);

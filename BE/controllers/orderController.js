@@ -406,7 +406,28 @@ const updateOrderStatus = async (req, res) => {
     }
 
     const allowedStatuses = ['Chờ xác nhận', 'Đang đóng gói', 'Đang giao', 'Hoàn thành', 'Đã hủy'];
-    if (!allowedStatuses.includes(nextStatus)) return res.status(400).json({ message: 'Trạng thái đơn hàng không hợp lệ.' });
+    if (!allowedStatuses.includes(nextStatus)) {
+      return res.status(400).json({ message: 'Trạng thái đơn hàng không hợp lệ.' });
+    }
+
+    // Ràng buộc luồng chuyển trạng thái (State Machine)
+    const ORDER_TRANSITIONS = {
+      'Chờ xác nhận': ['Đang đóng gói', 'Đã hủy'],
+      'Đang đóng gói': ['Đang giao', 'Đã hủy'],
+      'Đang giao': ['Hoàn thành', 'Đã hủy'],
+      'Hoàn thành': [],
+      'Đã hủy': []
+    };
+
+    if (previousStatus !== nextStatus) {
+      const validNext = ORDER_TRANSITIONS[previousStatus] || [];
+      if (!validNext.includes(nextStatus)) {
+        return res.status(400).json({
+          message: `Không thể chuyển đơn hàng từ trạng thái "${previousStatus}" sang "${nextStatus}".`
+        });
+      }
+    }
+
     order.status = nextStatus;
     if (req.body.trackingNumber !== undefined) order.trackingNumber = String(req.body.trackingNumber).trim();
     const trackingChanged = previousTrackingNumber !== order.trackingNumber;

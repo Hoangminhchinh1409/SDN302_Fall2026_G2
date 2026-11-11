@@ -16,6 +16,11 @@ const serviceSchema = new mongoose.Schema({
   durationMinutes: {
     type: Number,
     required: true
+  },
+  isDeleted: {
+    type: Boolean,
+    default: false,
+    index: true
   }
 }, {
   timestamps: true

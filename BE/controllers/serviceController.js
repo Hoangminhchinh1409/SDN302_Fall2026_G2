@@ -1,7 +1,7 @@
 const Service = require('../models/Service');
 
 const getServices = async (req, res) => {
-  const services = await Service.find({});
+  const services = await Service.find({ isDeleted: { $ne: true } });
   res.json(services);
 };
 
@@ -50,7 +50,8 @@ const deleteService = async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy dịch vụ' });
     }
 
-    await service.deleteOne();
+    service.isDeleted = true;
+    await service.save();
     res.json({ message: 'Đã xóa dịch vụ' });
   } catch (error) {
     console.error('deleteService error:', error);
