@@ -17,6 +17,7 @@ import Cart from './pages/cart/Cart';
 import Wishlist from './pages/Wishlist';
 import BookAppointment from './pages/BookAppointment';
 import PetProfiles from './pages/PetProfiles';
+import MyAppointments from './pages/MyAppointments';
 import Shipping from './pages/checkout/Shipping';
 import Payment from './pages/checkout/Payment';
 import PlaceOrder from './pages/checkout/PlaceOrder';
@@ -72,6 +73,7 @@ function App() {
             <Route path="wishlist" element={<Wishlist />} />
             <Route path="pets" element={<PetProfiles />} />
             <Route path="book-appointment" element={<BookAppointment />} />
+            <Route path="my-appointments" element={<MyAppointments />} />
             <Route path="shipping" element={<Shipping />} />
             <Route path="payment" element={<Payment />} />
             <Route path="placeorder" element={<PlaceOrder />} />

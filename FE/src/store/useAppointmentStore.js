@@ -56,6 +56,21 @@ const useAppointmentStore = create((set) => ({
       set({ error: message });
       return { success: false, message };
     }
+  },
+
+  cancelAppointment: async (id) => {
+    set({ error: null });
+    try {
+      const { data } = await api.put(`/appointments/${id}/cancel`);
+      set((state) => ({
+        appointments: state.appointments.map((appt) => (appt._id === id ? data.appointment || { ...appt, status: 'Cancelled' } : appt))
+      }));
+      return { success: true };
+    } catch (error) {
+      const message = error.response?.data?.message || error.message;
+      set({ error: message });
+      return { success: false, message };
+    }
   }
 }));
 
