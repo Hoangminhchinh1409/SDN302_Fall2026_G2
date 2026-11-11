@@ -35,6 +35,32 @@ const usePetProfileStore = create((set) => ({
     } catch (error) {
       console.error(error);
     }
+  },
+
+  addVaccination: async (petId, vacData) => {
+    try {
+      const { data } = await api.post(`/pets/${petId}/vaccinations`, vacData);
+      set((state) => ({
+        pets: state.pets.map((p) => (p._id === petId ? data : p))
+      }));
+      return true;
+    } catch (error) {
+      set({ error: error.response?.data?.message || error.message });
+      return false;
+    }
+  },
+
+  removeVaccination: async (petId, vacId) => {
+    try {
+      const { data } = await api.delete(`/pets/${petId}/vaccinations/${vacId}`);
+      set((state) => ({
+        pets: state.pets.map((p) => (p._id === petId ? data : p))
+      }));
+      return true;
+    } catch (error) {
+      console.error(error);
+      return false;
+    }
   }
 }));
 

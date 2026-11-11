@@ -4,7 +4,9 @@ const {
   getMyPets,
   createPetProfile,
   updatePetProfile,
-  deletePetProfile
+  deletePetProfile,
+  addVaccination,
+  deleteVaccination
 } = require('../controllers/petProfileController');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -15,5 +17,11 @@ router.route('/')
 router.route('/:id')
   .put(protect, updatePetProfile)
   .delete(protect, deletePetProfile);
+
+router.route('/:id/vaccinations')
+  .post(protect, addVaccination);
+
+router.route('/:id/vaccinations/:vacId')
+  .delete(protect, deleteVaccination);
 
 module.exports = router;

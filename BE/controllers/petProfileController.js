@@ -72,9 +72,60 @@ const deletePetProfile = async (req, res) => {
   }
 };
 
+// @desc    Add vaccination record
+// @route   POST /api/pets/:id/vaccinations
+// @access  Private
+const addVaccination = async (req, res) => {
+  try {
+    const { vaccineName, injectedDate, nextDueDate, notes } = req.body;
+    if (!vaccineName || !vaccineName.trim()) {
+      return res.status(400).json({ message: 'Tên vắc xin không được để trống' });
+    }
+
+    const pet = await PetProfile.findOne({ _id: req.params.id, user: req.user._id });
+    if (!pet) {
+      return res.status(404).json({ message: 'Không tìm thấy hồ sơ thú cưng' });
+    }
+
+    pet.vaccinations.push({
+      vaccineName: vaccineName.trim(),
+      injectedDate: injectedDate ? new Date(injectedDate) : new Date(),
+      nextDueDate: nextDueDate ? new Date(nextDueDate) : undefined,
+      notes: notes || ''
+    });
+
+    await pet.save();
+    res.status(201).json(pet);
+  } catch (error) {
+    console.error('addVaccination error:', error);
+    res.status(500).json({ message: error.message || 'Lỗi thêm lịch tiêm' });
+  }
+};
+
+// @desc    Delete vaccination record
+// @route   DELETE /api/pets/:id/vaccinations/:vacId
+// @access  Private
+const deleteVaccination = async (req, res) => {
+  try {
+    const pet = await PetProfile.findOne({ _id: req.params.id, user: req.user._id });
+    if (!pet) {
+      return res.status(404).json({ message: 'Không tìm thấy hồ sơ thú cưng' });
+    }
+
+    pet.vaccinations = pet.vaccinations.filter((v) => v._id.toString() !== req.params.vacId);
+    await pet.save();
+    res.json(pet);
+  } catch (error) {
+    console.error('deleteVaccination error:', error);
+    res.status(500).json({ message: error.message || 'Lỗi xóa lịch tiêm' });
+  }
+};
+
 module.exports = {
   getMyPets,
   createPetProfile,
   updatePetProfile,
-  deletePetProfile
+  deletePetProfile,
+  addVaccination,
+  deleteVaccination
 };

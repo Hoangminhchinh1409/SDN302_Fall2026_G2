@@ -26,7 +26,15 @@ const petProfileSchema = new mongoose.Schema({
   },
   notes: {
     type: String
-  }
+  },
+  vaccinations: [
+    {
+      vaccineName: { type: String, required: true },
+      injectedDate: { type: Date, default: Date.now },
+      nextDueDate: { type: Date },
+      notes: { type: String }
+    }
+  ]
 }, {
   timestamps: true
 });
