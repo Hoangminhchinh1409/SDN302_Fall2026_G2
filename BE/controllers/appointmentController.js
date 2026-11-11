@@ -1,7 +1,7 @@
 const Appointment = require('../models/Appointment');
 const Notification = require('../models/Notification');
-require('../models/Service');
-require('../models/PetProfile');
+const Service = require('../models/Service');
+const PetProfile = require('../models/PetProfile');
 require('../models/User');
 
 const notifyUser = async (notification) => {
@@ -31,9 +31,29 @@ const createAppointment = async (req, res) => {
       return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin dịch vụ, thú cưng và ngày giờ.' });
     }
 
+    const service = await Service.findOne({ _id: serviceId, isDeleted: { $ne: true } });
+    if (!service) {
+      return res.status(404).json({ message: 'Dịch vụ không tồn tại hoặc đã ngừng cung cấp.' });
+    }
+
+    const petFilter = { _id: petId };
+    if (req.user.role !== 'admin' && req.user.role !== 'staff') {
+      petFilter.user = req.user._id;
+    }
+    const pet = await PetProfile.findOne(petFilter);
+    if (!pet) {
+      return res.status(404).json({ message: 'Không tìm thấy hồ sơ thú cưng hợp lệ của bạn.' });
+    }
+
     const apptDate = new Date(date);
     if (isNaN(apptDate.getTime()) || apptDate <= new Date()) {
       return res.status(400).json({ message: 'Thời gian hẹn phải ở tương lai.' });
+    }
+
+    // Check operating hours: 08:00 - 20:00
+    const hours = apptDate.getHours();
+    if (hours < 8 || hours >= 20) {
+      return res.status(400).json({ message: 'Cửa hàng chỉ nhận lịch hẹn từ 08:00 đến 20:00 hàng ngày.' });
     }
 
     // Check conflict: Same pet cannot have another active appointment within +- 45 minutes
@@ -43,7 +63,8 @@ const createAppointment = async (req, res) => {
     const existingPetAppt = await Appointment.findOne({
       pet: petId,
       status: { $in: ['Pending', 'Confirmed'] },
-      date: { $gte: windowStart, $lte: windowEnd }
+      date: { $gte: windowStart, $lte: windowEnd },
+      isDeleted: { $ne: true }
     });
 
     if (existingPetAppt) {
@@ -53,7 +74,8 @@ const createAppointment = async (req, res) => {
     // Check store capacity limit: max 3 concurrent appointments in the same slot window
     const concurrentBookings = await Appointment.countDocuments({
       status: { $in: ['Pending', 'Confirmed'] },
-      date: { $gte: windowStart, $lte: windowEnd }
+      date: { $gte: windowStart, $lte: windowEnd },
+      isDeleted: { $ne: true }
     });
 
     if (concurrentBookings >= 3) {
@@ -98,7 +120,7 @@ const updateAppointmentStatus = async (req, res) => {
     }
 
     const appointment = await Appointment.findById(req.params.id);
-    if (!appointment) {
+    if (!appointment || appointment.isDeleted) {
       return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
     }
 
@@ -151,7 +173,7 @@ const updateAppointmentStatus = async (req, res) => {
 const cancelAppointment = async (req, res) => {
   try {
     const appointment = await Appointment.findById(req.params.id);
-    if (!appointment) {
+    if (!appointment || appointment.isDeleted) {
       return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
     }
 
@@ -180,7 +202,7 @@ const cancelAppointment = async (req, res) => {
 const deleteAppointment = async (req, res) => {
   try {
     const appointment = await Appointment.findById(req.params.id);
-    if (!appointment) {
+    if (!appointment || appointment.isDeleted) {
       return res.status(404).json({ message: 'Không tìm thấy lịch hẹn' });
     }
 

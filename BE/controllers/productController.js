@@ -58,6 +58,12 @@ const getProducts = async (req, res) => {
 
     Object.assign(filter, priceFilter);
 
+    if (req.query.stockFilter === 'low') {
+      filter.stock = { $lte: 5 };
+    } else if (req.query.stockFilter === 'out') {
+      filter.stock = 0;
+    }
+
     let sortOpt = { name: 1 }; // Default sort by name A-Z
     if (req.query.sort === 'latest') {
       sortOpt = { createdAt: -1 };
@@ -93,7 +99,7 @@ const getProductById = async (req, res) => {
       .populate('category', 'name')
       .populate('brand', 'name');
 
-    if (product) {
+    if (product && !product.isDeleted) {
       res.json(product);
     } else {
       res.status(404).json({ message: 'Product not found' });
@@ -233,16 +239,17 @@ const createProductReview = async (req, res) => {
 const updateProductStock = async (req, res) => {
   try {
     const { stock } = req.body;
-    if (stock === undefined || isNaN(stock) || Number(stock) < 0) {
-      return res.status(400).json({ message: 'Số lượng tồn kho không hợp lệ' });
+    const numStock = Number(stock);
+    if (stock === undefined || isNaN(numStock) || !Number.isInteger(numStock) || numStock < 0) {
+      return res.status(400).json({ message: 'Số lượng tồn kho phải là số nguyên không âm (>= 0)' });
     }
 
     const product = await Product.findById(req.params.id);
-    if (!product) {
+    if (!product || product.isDeleted) {
       return res.status(404).json({ message: 'Product not found' });
     }
 
-    product.stock = Number(stock);
+    product.stock = numStock;
     const updated = await product.save();
     res.json({ _id: updated._id, stock: updated.stock, name: updated.name });
   } catch (error) {

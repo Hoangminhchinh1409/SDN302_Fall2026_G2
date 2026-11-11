@@ -37,8 +37,8 @@ const addOrderItems = async (req, res) => {
     for (const item of orderItems) {
       const productId = item.product || item._id;
       const product = await Product.findById(productId);
-      if (!product) {
-        return res.status(404).json({ message: `Không tìm thấy sản phẩm "${item.name || productId}"` });
+      if (!product || product.isDeleted) {
+        return res.status(404).json({ message: `Sản phẩm "${item.name || productId}" không tồn tại hoặc đã ngừng kinh doanh` });
       }
 
       const qty = Number(item.qty) || 1;

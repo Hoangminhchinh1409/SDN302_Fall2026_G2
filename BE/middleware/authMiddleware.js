@@ -17,6 +17,9 @@ const protect = async (req, res, next) => {
       if (!req.user) {
         return res.status(401).json({ message: 'User not found' });
       }
+      if (req.user.isDeleted) {
+        return res.status(401).json({ message: 'Tài khoản đã bị khóa hoặc xóa' });
+      }
       next();
     } catch (error) {
       console.error(error);

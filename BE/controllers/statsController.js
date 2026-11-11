@@ -9,14 +9,14 @@ const Appointment = require('../models/Appointment');
 const getStats = async (req, res) => {
   try {
     const totalOrders = await Order.countDocuments({});
-    const totalProducts = await Product.countDocuments({});
-    const totalUsers = await User.countDocuments({});
+    const totalProducts = await Product.countDocuments({ isDeleted: { $ne: true } });
+    const totalUsers = await User.countDocuments({ isDeleted: { $ne: true } });
 
     const orders = await Order.find({ isPaid: true });
     const totalRevenue = orders.reduce((acc, order) => acc + order.totalPrice, 0);
 
     // Get top 5 selling products (mocked by rating for now, or you could aggregate from orders)
-    const topProducts = await Product.find({}).sort({ rating: -1 }).limit(5);
+    const topProducts = await Product.find({ isDeleted: { $ne: true } }).sort({ rating: -1 }).limit(5);
 
     res.json({
       totalOrders,

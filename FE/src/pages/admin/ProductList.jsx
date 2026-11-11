@@ -37,9 +37,10 @@ const ProductList = () => {
       sort: sort,
       category: category,
       brand: brand,
+      stockFilter: stockFilter !== 'all' ? stockFilter : undefined,
       pageSize: 12,
     });
-  }, [fetchProducts, currentPage, keyword, sort, category, brand]);
+  }, [fetchProducts, currentPage, keyword, sort, category, brand, stockFilter]);
 
   const handleStockUpdate = async (productId) => {
     const currentProduct = products.find((p) => p._id === productId);
@@ -48,8 +49,14 @@ const ProductList = () => {
         ? stockDrafts[productId]
         : currentProduct?.stock;
 
-    if (newStock === undefined || newStock === '' || isNaN(newStock) || Number(newStock) < 0) {
-      alert('Vui lòng nhập số lượng hợp lệ (>= 0)');
+    if (
+      newStock === undefined ||
+      newStock === '' ||
+      isNaN(newStock) ||
+      !Number.isInteger(Number(newStock)) ||
+      Number(newStock) < 0
+    ) {
+      alert('Vui lòng nhập số lượng nguyên hợp lệ (>= 0)');
       return;
     }
 
@@ -63,6 +70,7 @@ const ProductList = () => {
         sort: sort,
         category: category,
         brand: brand,
+        stockFilter: stockFilter !== 'all' ? stockFilter : undefined,
         pageSize: 12,
       });
       setStockMessage({ type: 'success', text: 'Cập nhật tồn kho thành công!' });
@@ -88,6 +96,7 @@ const ProductList = () => {
           sort: sort,
           category: category,
           brand: brand,
+          stockFilter: stockFilter !== 'all' ? stockFilter : undefined,
           pageSize: 12,
         });
       } catch (err) {
@@ -110,13 +119,7 @@ const ProductList = () => {
     navigate('/admin/product/new');
   };
 
-  // Client-side quick filter for stock if requested
-  const displayedProducts = products.filter((p) => {
-    const s = p.stock ?? 0;
-    if (stockFilter === 'low') return s <= 5;
-    if (stockFilter === 'out') return s === 0;
-    return true;
-  });
+  const displayedProducts = products;
 
   return (
     <div>
@@ -207,6 +210,7 @@ const ProductList = () => {
             onClick={() => {
               searchParams.delete('filter');
               setSearchParams(searchParams);
+              setCurrentPage(1);
             }}
             className={`px-3 py-1 rounded-full text-xs font-semibold ${
               stockFilter === 'all'
@@ -214,10 +218,13 @@ const ProductList = () => {
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
-            Tất cả ({products.length})
+            Tất cả
           </button>
           <button
-            onClick={() => setSearchParams({ filter: 'low' })}
+            onClick={() => {
+              setSearchParams({ filter: 'low' });
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1 rounded-full text-xs font-semibold ${
               stockFilter === 'low'
                 ? 'bg-amber-500 text-white'
@@ -227,7 +234,10 @@ const ProductList = () => {
             Sắp hết hàng (≤ 5)
           </button>
           <button
-            onClick={() => setSearchParams({ filter: 'out' })}
+            onClick={() => {
+              setSearchParams({ filter: 'out' });
+              setCurrentPage(1);
+            }}
             className={`px-3 py-1 rounded-full text-xs font-semibold ${
               stockFilter === 'out'
                 ? 'bg-red-500 text-white'

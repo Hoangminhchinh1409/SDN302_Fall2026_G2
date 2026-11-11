@@ -19,6 +19,12 @@ const BookAppointment = () => {
   const [date, setDate] = useState('');
   const [success, setSuccess] = useState(false);
 
+  const getMinDateTime = () => {
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    return now.toISOString().slice(0, 16);
+  };
+
   useEffect(() => {
     fetchServices();
     fetchPets();
@@ -132,12 +138,18 @@ const BookAppointment = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {language === 'vi' ? 'Ngày & Giờ hẹn' : 'Date & Time'}
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-semibold text-gray-700">
+                {language === 'vi' ? 'Ngày & Giờ hẹn' : 'Date & Time'}
+              </label>
+              <span className="text-[11px] text-gray-400">
+                {language === 'vi' ? 'Giờ mở cửa: 08:00 - 20:00' : 'Hours: 08:00 - 20:00'}
+              </span>
+            </div>
             <input
               type="datetime-local"
               value={date}
+              min={getMinDateTime()}
               onChange={(e) => setDate(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-brand-orange focus:border-brand-orange text-sm"
               required
